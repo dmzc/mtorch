@@ -1,0 +1,14 @@
+LICENSE
+README.md
+pyproject.toml
+mtorch/__init__.py
+mtorch/config.py
+mtorch/interfaces.py
+mtorch/operator.py
+mtorch/render.py
+mtorch/tensor.py
+mtorch.egg-info/PKG-INFO
+mtorch.egg-info/SOURCES.txt
+mtorch.egg-info/dependency_links.txt
+mtorch.egg-info/requires.txt
+mtorch.egg-info/top_level.txt
