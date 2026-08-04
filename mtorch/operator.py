@@ -4,7 +4,7 @@ import math
 import numpy as np
 import weakref
 from mtorch.config import ENABLE_BACKPROGATION
-from mtorch.interfaces import ITensor, IOperator
+from mtorch.interfaces import ITensor, IOperator, ISliceType
 from mtorch.tensor import Tensor
 
 
@@ -418,6 +418,68 @@ def transpose(x: np.ndarray | ITensor | list[int], axes=None):
     return Transpose(axes)(x)
 
 
+class GetItem(Operator):
+
+    __slices: ISliceType
+
+    def __init__(self, slices: ISliceType):
+        super().__init__()
+        self.__slices = slices
+
+    def forward(self, x: np.ndarray) -> np.ndarray:
+        return x[self.__slices]
+
+    def backward(self, dout: ITensor) -> ITensor:
+        left = copy(self.inputs[0]) - copy(self.inputs[0])
+        return set_item(left, dout, self.__slices)
+
+
+def get_item(x: any, slices: ISliceType) -> ITensor:
+    return GetItem(slices)(x)
+
+
+class SetItem(Operator):
+    _slices: ISliceType
+
+    def __init__(self, slices: ISliceType):
+        super().__init__()
+        self._slices = slices
+
+    def forward(self, x_left: np.ndarray, y_left: np.ndarray) -> np.ndarray:
+        n_x_left = x_left.copy()
+        if (
+            y_left.ndim == 1 and y_left.shape[0] == 1
+        ):  # 形如 x_left[0,1]形式，左侧为标量，此时右侧如果为np.array会警告
+            y_left = y_left.item()
+        n_x_left[self._slices] = y_left
+        return n_x_left
+
+    def backward(self, dout: ITensor) -> ITensor:
+        # TODO:这里反向传播形成的二阶导是不是行的通，还没怎么想清楚，虽然用的算
+        # 子来达到效果的。
+        dright = get_item(dout, self._slices)
+        dright = copy(dright)
+        dleft = copy(dout)
+        dleft = set_item(dleft, 0, self._slices)
+        return dleft, dright
+
+
+def set_item(x_left: any, y_left: any, slices: ISliceType):
+    return SetItem(slices=slices)(x_left, y_left)
+
+
+class Copy(Operator):
+    def forward(self, x: np.ndarray):
+        return x.copy()
+
+    def backward(self, dout: ITensor):
+        return dout
+
+
+def copy(x) -> ITensor:
+    return Copy()(x)
+
+
 # ==========================================================================
 # 张量形状算子
 # ==========================================================================
@@ -565,18 +627,26 @@ def sum_to(x: np.ndarray, shape: tuple[int]) -> ITensor:
     return SumTo(shape=shape)(x)
 
 
-class Dot(Operator):
+class Matmul(Operator):
 
     def forward(self, x: np.ndarray, w: np.ndarray):
         return x.dot(w)
 
     def backward(self, dout: ITensor) -> ITensor:
         x, w = self.inputs
-        return dot(dout, w.data.T), dot(x.data.T, dout)
+        return matmul(dout, w.data.T), matmul(x.data.T, dout)
 
 
-def dot(x: np.ndarray, w: np.ndarray) -> ITensor:
-    return Dot()(x, w)
+def matmul(x: np.ndarray, w: np.ndarray) -> ITensor:
+    return Matmul()(x, w)
+
+
+def rmatmul(w: np.ndarray, x: np.ndarray) -> ITensor:
+    return Matmul()(x, w)
+
+
+def imatmul(x: np.ndarray, w: np.ndarray) -> ITensor:
+    return Matmul()(x, w)
 
 
 # ==========================================================================
@@ -656,8 +726,8 @@ class Linear(Operator):
         db = None
         if b is not None:
             db = sum_to(dout, b.shape)
-        dx = dot(dout, w.data.T)
-        dw = dot(x.data.T, dout)
+        dx = matmul(dout, w.data.T)
+        dw = matmul(x.data.T, dout)
         return dx, dw, db
 
 

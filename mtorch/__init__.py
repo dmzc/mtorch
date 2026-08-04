@@ -3,7 +3,7 @@ from mtorch.tensor import Tensor
 import mtorch.operator as F
 from mtorch.render import render
 from mtorch.nn import Module, Sequential, Linear, Sigmoid, MeanSquareLoss
-from mtorch.optim import SGD
+from mtorch.optim import SGD, Adam
 
 __version__ = "0.0.13"
 
@@ -19,7 +19,23 @@ def _setup():
     Tensor.__truediv__ = F.div
     Tensor.__rtruediv__ = F.rdiv
     Tensor.__pow__ = F.pow
+    Tensor.__matmul__ = F.matmul
+    Tensor.__rmatmul__ = F.rmatmul
+    Tensor.__imatmul__ = F.imatmul
+    Tensor.__getitem__ = F.get_item
 
 
 _setup()
-__all__ = ["ITensor", "Tensor", "F", "render"]
+__all__ = [
+    "ITensor",
+    "Tensor",
+    "F",
+    "render",
+    "Module",
+    "Sequential",
+    "Linear",
+    "Sigmoid",
+    "MeanSquareLoss",
+    "SGD",
+    "Adam",
+]

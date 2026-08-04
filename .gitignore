@@ -4,3 +4,4 @@ test_report.md
 signal_diagram*
 dist/
 mtorch.egg-info
+.ipynb_checkpoints

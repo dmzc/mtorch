@@ -3,6 +3,7 @@ import numpy as np
 import weakref
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
+from typing import TypeAlias
 
 
 class ITensor(ABC):
@@ -80,3 +81,6 @@ class IOptimizer(ABC):
 
     @abstractmethod
     def step(self): ...
+
+
+ISliceType: TypeAlias = int | slice | tuple[int | slice]

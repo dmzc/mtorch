@@ -426,24 +426,55 @@ def test_sum():
     assert v1.grad.data.tolist() == [[4.0, 4.0], [5.0, 5.0]], "keepdims为true反向传播"
 
 
-def test_dot():
-    # fmt:off
-    x = Tensor(data=[
-        [1, 2, 3], 
-        [4, 5, 6]
-    ])
-    # fmt:off
-    w = Tensor(data=[
-        [1, 1],
-        [2, 2],
-        [3, 3]
-    ])
-    out: ITensor = F.dot(x, w)
-    assert out.data.tolist() == [[14,14],[32,32]],"矩阵运算结果"
-    out.grad=Tensor(data=[[2,2],[3,3]])
+def test_matmul():
+    x = Tensor(data=[[1, 2, 3], [4, 5, 6]])
+
+    w = Tensor(data=[[1, 1], [2, 2], [3, 3]])
+    out: ITensor = x @ w
+    assert out.data.tolist() == [[14, 14], [32, 32]], "张量点乘运算结果"
+    out.grad = Tensor(data=[[2, 2], [3, 3]])
     out.backward()
-    assert x.grad.data.tolist()==np.dot([[2,2],[3,3]],w.data.T).tolist(),"点乘左边能反向传播"
-    assert w.grad.data.tolist()==np.dot(x.data.T,[[2,2],[3,3]]).tolist(),"点乘右边能反向传播"
+    assert (
+        x.grad.data.tolist() == np.dot([[2, 2], [3, 3]], w.data.T).tolist()
+    ), "点乘左边能反向传播"
+    assert (
+        w.grad.data.tolist() == np.dot(x.data.T, [[2, 2], [3, 3]]).tolist()
+    ), "点乘右边能反向传播"
+
+    # 测试@运算符
+    result: ITensor = 2 @ Tensor([[1, 2], [3, 4]])
+    assert isinstance(result, Tensor) and result.data.tolist() == [
+        [2, 4],
+        [6, 8],
+    ], "数字乘以张量"
+    result: ITensor = Tensor([[1, 2], [3, 4]]) @ 2
+    assert isinstance(result, Tensor) and result.data.tolist() == [
+        [2, 4],
+        [6, 8],
+    ], "张量乘以数字"
+    result: ITensor = Tensor([[1, 2], [3, 4]]) @ np.array([[2, 2], [3, 3]])
+    assert isinstance(result, Tensor) and result.data.tolist() == [
+        [8, 8],
+        [18, 18],
+    ], "张量乘以numpy数组"
+    result: ITensor = np.array([[2, 2], [3, 3]]) @ Tensor([[1, 2], [3, 4]])
+    assert isinstance(result, Tensor) and result.data.tolist() == [
+        [8, 12],
+        [12, 18],
+    ], "numpy数组乘以张量"
+    result: ITensor = Tensor([[1, 2], [3, 4]]) @ Tensor([[2, 2], [3, 3]])
+    assert isinstance(result, Tensor) and result.data.tolist() == [
+        [8, 8],
+        [18, 18],
+    ], "张量乘以张量"
+
+    tensor1: ITensor = Tensor([[1, 2], [3, 4]])
+    temp = tensor1
+    tensor1 @= [[3, 3], [4, 4]]
+    assert id(tensor1) != id(temp) and tensor1.data.tolist() == [
+        [11, 11],
+        [25, 25],
+    ], "矩阵自乘@="
 
 
 def test_mean_square_loss():
@@ -469,3 +500,85 @@ def test_sigmoid():
     out.grad = Tensor(data=8.0)
     out.backward(retain_grad=True)
     assert x.grad.data.tolist() == [2.0], "sigmoid激活函数能反向传播"
+
+
+def test_getitem():
+    def assertSlice(
+        slice: str,
+        output_data: list[int],
+        output_grad: list[int],
+        input_grad: list[int],
+        callback: any,
+    ):
+        tensor1 = Tensor([[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]])
+        result: ITensor = callback(tensor1)
+        assert (
+            isinstance(result, Tensor) and result.data.tolist() == output_data
+        ), f"切片表达式：{slice}"
+        result.grad = Tensor(output_grad)
+        result.backward(retain_grad=True)
+        assert (
+            tensor1.grad.data.tolist() == input_grad
+        ), f"切片表达式：{slice}能反向传播"
+
+    assertSlice(
+        "[0]",
+        callback=lambda tensor1: tensor1[0],
+        output_data=[1, 2, 3],
+        output_grad=[13, 14, 15],
+        input_grad=[[13, 14, 15], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
+    )
+    assertSlice(
+        "[0, 1]",
+        callback=lambda tensor1: tensor1[0, 1],
+        output_data=2,
+        output_grad=[11],
+        input_grad=[[0, 11, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
+    )
+    assertSlice(
+        "[:, 1]",
+        callback=lambda tensor1: tensor1[:, 1],
+        output_data=[2, 5, 8, 11],
+        output_grad=[14, 15, 16, 17],
+        input_grad=[[0, 14, 0], [0, 15, 0], [0, 16, 0], [0, 17, 0]],
+    )
+    assertSlice(
+        "[1:3, 1]",
+        callback=lambda tensor1: tensor1[1:3, 1],
+        output_data=[5, 8],
+        output_grad=[14, 15],
+        input_grad=[[0, 0, 0], [0, 14, 0], [0, 15, 0], [0, 0, 0]],
+    )
+    assertSlice(
+        "[1, 0:2]",
+        callback=lambda tensor1: tensor1[1, 0:2],
+        output_data=[4, 5],
+        output_grad=[14, 15],
+        input_grad=[[0, 0, 0], [14, 15, 0], [0, 0, 0], [0, 0, 0]],
+    )
+    assertSlice(
+        "[1:3, 0:2]",
+        callback=lambda tensor1: tensor1[1:3, 0:2],
+        output_data=[[4, 5], [7, 8]],
+        output_grad=[[14, 15], [16, 17]],
+        input_grad=[[0, 0, 0], [14, 15, 0], [16, 17, 0], [0, 0, 0]],
+    )
+    assertSlice(
+        "[0:4:2]",
+        callback=lambda tensor1: tensor1[0:4:2],
+        output_data=[[1, 2, 3], [7, 8, 9]],
+        output_grad=[[14, 15, 16], [17, 18, 19]],
+        input_grad=[[14, 15, 16], [0, 0, 0], [17, 18, 19], [0, 0, 0]],
+    )
+    assertSlice(
+        "[0:4:2,0:2]",
+        callback=lambda tensor1: tensor1[0:4:2, 0:2],
+        output_data=[[1, 2], [7, 8]],
+        output_grad=[[14, 15], [17, 18]],
+        input_grad=[[14, 15, 0], [0, 0, 0], [17, 18, 0], [0, 0, 0]],
+    )
+
+
+def test_setitem():
+    # TODO 原地赋值貌似没有办法反向传播
+    pass

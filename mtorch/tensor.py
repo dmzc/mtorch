@@ -12,7 +12,7 @@ class Tensor(ITensor):
 
     # 貌似不需要这个，numpy内部实现__add__、__radd__方法应该做了类型判断，遇到不识别的类型，会自动转交。
 
-    # __array_priority__ = 200
+    __array_priority__ = 200
 
     def __init__(
         self,

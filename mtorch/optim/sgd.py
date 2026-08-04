@@ -2,6 +2,9 @@ from mtorch.interfaces import IOptimizer, IModule
 
 
 class SGD(IOptimizer):
+    """
+    随机梯度下降 - Stochastic Gradient Desecent
+    """
 
     __lr: float
 
