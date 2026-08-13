@@ -122,14 +122,14 @@ def test_add():
     v2 = Tensor(data=8.0)
     v3: ITensor = v1 + v2
     v3.grad = Tensor(data=2.0)
-    v3.backward(retain_grad=True)
+    v3.backward()
     assert v1.grad.data.tolist() == 2.0 and v2.grad.data.tolist() == 2.0, "加法反向传播"
 
     v1 = Tensor(data=2.0)
     v2 = Tensor(data=[[1, 2, 3], [4, 5, 6]])
     v3: ITensor = v1 + v2
     v3.grad = Tensor(data=[[1, 1, 1], [3, 3, 3]])
-    v3.backward(retain_grad=True)
+    v3.backward()
     assert v1.grad.data.tolist() == 12 and v2.grad.data.tolist() == [
         [1, 1, 1],
         [3, 3, 3],
@@ -140,7 +140,7 @@ def test_neg():
     v1 = Tensor(data=2.0)
     v3: ITensor = -v1
     v3.grad = Tensor(data=2.0)
-    v3.backward(retain_grad=True)
+    v3.backward()
     assert v1.grad.data.tolist() == -2.0, "加法逆元反向传播"
 
 
@@ -150,7 +150,7 @@ def test_sub():
 
     v3: ITensor = v1 - v2
     v3.grad = Tensor(data=2.0)
-    v3.backward(retain_grad=True)
+    v3.backward()
     assert (
         v1.grad.data.tolist() == 2.0 and v2.grad.data.tolist() == -2.0
     ), "减法反向传播"
@@ -159,7 +159,7 @@ def test_sub():
     v2 = Tensor(data=[[1, 2, 3], [4, 5, 6]])
     v3: ITensor = v1 - v2
     v3.grad = Tensor(data=[[1, 1, 1], [3, 3, 3]])
-    v3.backward(retain_grad=True)
+    v3.backward()
     assert v1.grad.data.tolist() == 12 and v2.grad.data.tolist() == [
         [-1, -1, -1],
         [-3, -3, -3],
@@ -172,14 +172,14 @@ def test_mul():
 
     v3: ITensor = v1 * v2
     v3.grad = Tensor(data=2.0)
-    v3.backward(retain_grad=True)
+    v3.backward()
     assert v1.grad.data.tolist() == 16 and v2.grad.data.tolist() == 4, "乘法反向传播"
 
     v1 = Tensor(data=2.0)
     v2 = Tensor(data=[[1, 2, 3], [4, 5, 6]])
     v3: ITensor = v1 * v2
     v3.grad = Tensor(data=[[1, 1, 1], [3, 3, 3]])
-    v3.backward(retain_grad=True)
+    v3.backward()
     assert v1.grad.data.tolist() == 51 and v2.grad.data.tolist() == [
         [2, 2, 2],
         [6, 6, 6],
@@ -192,14 +192,14 @@ def test_div():
 
     v3: ITensor = v1 / v2
     v3.grad = Tensor(data=2.0)
-    v3.backward(retain_grad=True)
+    v3.backward()
     assert v1.grad.data.tolist() == 1 and v2.grad.data.tolist() == -4.0, "乘法反向传播"
 
     v1 = Tensor(data=[[2, 4, 6], [8, 10, 12]])
     v2 = Tensor(data=2.0)
     v3: ITensor = v1 / v2
     v3.grad = Tensor(data=[[2, 2, 2], [4, 4, 4]])
-    v3.backward(retain_grad=True)
+    v3.backward()
     assert (
         v1.grad.data.tolist()
         == [
@@ -215,7 +215,7 @@ def test_pow():
     v1 = Tensor(data=2.0)
     v3: ITensor = v1**3
     v3.grad = Tensor(data=2.0)
-    v3.backward(retain_grad=True)
+    v3.backward()
     assert v1.grad.data.tolist() == 24, "幂操作反向传播"
 
 
@@ -223,7 +223,7 @@ def test_sin():
     v1 = Tensor(data=0)
     v3: ITensor = F.sin(v1)
     v3.grad = Tensor(data=2.0)
-    v3.backward(retain_grad=True)
+    v3.backward()
     assert v1.grad.data.tolist() == 2, "sin函数反向传播"
 
 
@@ -231,7 +231,7 @@ def test_cos():
     v1 = Tensor(data=np.pi / 2)
     v3: ITensor = F.cos(v1)
     v3.grad = Tensor(data=2.0)
-    v3.backward(retain_grad=True)
+    v3.backward()
     assert v1.grad.data.tolist() == -2, "cos函数反向传播"
 
 
@@ -239,7 +239,7 @@ def test_tanh():
     v1 = Tensor(data=2)
     v3: ITensor = F.tanh(v1)
     v3.grad = Tensor(data=2.0)
-    v3.backward(retain_grad=True)
+    v3.backward()
     assert np.allclose(v1.grad.data.tolist(), 0.1413016), "双曲正切函数反向传播"
 
 
@@ -247,7 +247,7 @@ def test_exp():
     v1 = Tensor(data=0)
     v3: ITensor = F.exp(v1)
     v3.grad = Tensor(data=2.0)
-    v3.backward(retain_grad=True)
+    v3.backward()
     assert v1.grad.data.tolist() == 2.0, "指数函数反向传播"
 
 
@@ -255,7 +255,7 @@ def test_log():
     v1 = Tensor(data=2)
     v3: ITensor = F.log(v1)
     v3.grad = Tensor(data=2.0)
-    v3.backward(retain_grad=True)
+    v3.backward()
     assert v1.grad.data.tolist() == 1.0, "对数函数反向传播"
 
 
@@ -276,7 +276,7 @@ def test_reshape():
             [1,2,3],
             [4,5,6]
     ])
-    t_variable.backward(retain_grad=True)
+    t_variable.backward()
     assert f_variable.grad.data.tolist()==[1,2,3,4,5,6],"反向传播正常"
 
 
@@ -314,7 +314,7 @@ def test_transpose():
     # fmt:off
     t_variable.grad=Tensor(
         data=[[1, 2], [3, 4], [5, 6]])
-    t_variable.backward(retain_grad=True)
+    t_variable.backward()
     assert f_variable.grad.data.tolist()==[[1,3,5],[2,4,6]],"反向传播正常"
 
 
@@ -362,7 +362,7 @@ def test_sum_to():
     # fmt:off
     t_variable.grad=Tensor(
         data=[[1],[2]])
-    t_variable.backward(retain_grad=True)
+    t_variable.backward()
     assert f_variable.grad.data.tolist()==[[1,1,1],[2,2,2]],"反向传播正常"
 
 
@@ -399,7 +399,7 @@ def test_broadcast_to():
                 [2,2,2]
             ]
         ])
-    t_variable.backward(retain_grad=True)
+    t_variable.backward()
     assert f_variable.grad.data.tolist()==[[2,3,4],[6,7,8]],"反向传播正常"
 
 
@@ -407,21 +407,21 @@ def test_sum():
     v1 = Tensor(data=[[1, 2], [3, 4]])
     v2 = F.sum(v1)
     v2.grad = Tensor(data=3.0)
-    v2.backward(retain_grad=True)
+    v2.backward()
     assert v2.data.tolist() == 10, "无参数求和"
     assert v1.grad.data.tolist() == [[3.0, 3.0], [3.0, 3.0]], "无参数求和反向传播"
 
     v1.clear_grad()
     v2 = F.sum(v1, axes=(1,))
     v2.grad = Tensor(data=[4.0, 5.0])
-    v2.backward(retain_grad=True)
+    v2.backward()
     assert v2.data.tolist() == [3, 7], "按维度2求和"
     assert v1.grad.data.tolist() == [[4.0, 4.0], [5.0, 5.0]], "按维度2求和反向传播"
 
     v1.clear_grad()
     v2 = F.sum(v1, axes=(1,), keepdims=True)
     v2.grad = Tensor(data=[[4.0], [5.0]])
-    v2.backward(retain_grad=True)
+    v2.backward()
     assert v2.data.tolist() == [[3], [7]], "keepdims为true"
     assert v1.grad.data.tolist() == [[4.0, 4.0], [5.0, 5.0]], "keepdims为true反向传播"
 
@@ -483,7 +483,7 @@ def test_mean_square_loss():
     out: ITensor = F.mean_square_loss(y_actual=y_actual, y_expect=y_expect)
     assert out.data.tolist() == 2.8, "均方误差损失函数运算结果"
     out.grad = Tensor(data=5.0)
-    out.backward(retain_grad=True)
+    out.backward()
     assert y_actual.grad.data.tolist() == [
         -2.0,
         2.0,
@@ -498,7 +498,7 @@ def test_sigmoid():
     out: ITensor = F.sigmoid(x)
     assert out.data.tolist() == [0.5], "sigmoid激活函数运算结果"
     out.grad = Tensor(data=8.0)
-    out.backward(retain_grad=True)
+    out.backward()
     assert x.grad.data.tolist() == [2.0], "sigmoid激活函数能反向传播"
 
 
@@ -516,7 +516,7 @@ def test_getitem():
             isinstance(result, Tensor) and result.data.tolist() == output_data
         ), f"切片表达式：{slice}"
         result.grad = Tensor(output_grad)
-        result.backward(retain_grad=True)
+        result.backward()
         assert (
             tensor1.grad.data.tolist() == input_grad
         ), f"切片表达式：{slice}能反向传播"
@@ -578,7 +578,54 @@ def test_getitem():
         input_grad=[[14, 15, 0], [0, 0, 0], [17, 18, 0], [0, 0, 0]],
     )
 
+    # 索引是数组，会判断所有索引是否能广播成适宜形状，如果能则按坐标取数
+    index: np.ndarray = np.array([0, 3])
+    assertSlice(
+        "索引都是一维度数组",
+        callback=lambda tensor1: tensor1[index.ravel(), np.arange(2)],
+        output_data=[1, 11],
+        output_grad=[14, 15],
+        input_grad=[[14, 0, 0], [0, 0, 0], [0, 0, 0], [0, 15, 0]],
+    )
+
 
 def test_setitem():
     # TODO 原地赋值貌似没有办法反向传播
+    pass
+
+
+def test_softmax():
+
+    input: ITensor = Tensor([[10, 42, 20], [25, 45, 32]])
+    output: ITensor = F.softmax(input)
+    output.grad = Tensor([[1, 1, 1], [1, 1, 1]])
+    output.backward()
+    output_data = output.data
+
+    assert (
+        isinstance(output, Tensor)
+        and np.allclose(np.sum(output_data, axis=1).tolist(), [1.0, 1.0])
+        and np.argsort(output_data, axis=1).tolist() == [[0, 2, 1], [0, 2, 1]]
+    ), "softmax前向传播数值"
+    # TODO:还需要支持数据微分来验证反向传播
+    # assert input.grad.data.tolist() == [], "softmax反向向传播梯度"
+
+    # TODO：非二维数据、非最后维度进行softmax
+
+
+def test_logSoftmax():
+    input: ITensor = Tensor([[10, 42, 20], [25, 45, 32]])
+    output: ITensor = F.logSoftmax(input)
+    output.grad = Tensor([[1, 1, 1], [1, 1, 1]])
+    output.backward()
+    output_data = output.data
+
+    assert (
+        isinstance(output, Tensor)
+        and np.allclose(np.sum(output_data, axis=1).tolist(), [1.0, 1.0])
+        and np.argsort(output_data, axis=1).tolist() == [[0, 2, 1], [0, 2, 1]]
+    ), "logSoftmax前向传播数值"
+
+
+def test_crossEntroyLoss():
     pass

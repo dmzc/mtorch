@@ -11,12 +11,11 @@ class ITensor(ABC):
     张量
     """
 
-    is_input: bool
     data: np.ndarray
-    grad: ITensor
     creator: IOperator
     generation: int
     require_grad: bool
+    grad: ITensor
 
     @property
     def id(self) -> str: ...
@@ -36,9 +35,12 @@ class ITensor(ABC):
     @property
     def dtype(self): ...
 
+    @abstractmethod
+    def init_grad(self) -> None: ...
+
     def clear_grad(self) -> None: ...
 
-    def backward(self, retain_grad=False) -> None: ...
+    def backward(self) -> None: ...
 
 
 class IOperator(ABC):

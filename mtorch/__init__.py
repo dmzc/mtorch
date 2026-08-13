@@ -2,7 +2,16 @@ from mtorch.interfaces import ITensor
 from mtorch.tensor import Tensor
 import mtorch.operator as F
 from mtorch.render import render
-from mtorch.nn import Module, Sequential, Linear, Sigmoid, MeanSquareLoss
+from mtorch.nn import (
+    Module,
+    Sequential,
+    Linear,
+    Sigmoid,
+    MeanSquareLoss,
+    CrossEntroyLoss,
+    Softmax,
+    LogSoftmax,
+)
 from mtorch.optim import SGD, Adam
 
 __version__ = "0.0.13"

@@ -2,10 +2,10 @@ from __future__ import annotations
 import numpy as np
 from mtorch.config import ENABLE_BACKPROGATION
 from mtorch.interfaces import ITensor, IOperator
+from mtorch.autograd import backward
 
 
 class Tensor(ITensor):
-
     __name: str
 
     # TODO：修改为__array_func__
@@ -19,7 +19,6 @@ class Tensor(ITensor):
         data: any,  # 数值、np.ndarray，不能是Variable实例
         creator: IOperator = None,
         name: str = None,
-        is_input: bool = False,
         require_grad: bool = False,
     ):
         if np.isscalar(data) or isinstance(data, list) or isinstance(data, tuple):
@@ -27,7 +26,6 @@ class Tensor(ITensor):
         self.data = data
         self.grad = None
         self.__name = name
-        self.is_input = is_input
         self.require_grad = require_grad
         if ENABLE_BACKPROGATION:
             creator = self.creator = creator
@@ -39,40 +37,8 @@ class Tensor(ITensor):
     def clear_grad(self):
         self.grad = None
 
-    def backward(self, retain_grad=False) -> None:
-        if self.creator is None:
-            return
-
-        if self.grad is None:
-            self.grad = Tensor(data=np.ones_like(self), is_input=self.is_input)
-        creators: list[IOperator] = []
-        seen_set: set = set()
-
-        def add_creator(creator):
-            if creator not in seen_set:
-                seen_set.add(creator)
-                creators.append(creator)
-                creators.sort(key=lambda x: x.generation)
-
-        add_creator(self.creator)
-
-        while creators:
-            creator = creators.pop()
-            gys = [output().grad for output in creator.outputs]
-            gxs = creator.backward(*gys)
-            if not isinstance(gxs, tuple):
-                gxs = (gxs,)
-            for x, gx in zip(creator.inputs, gxs):
-                if x.grad is None:
-                    x.grad = gx
-                else:
-                    x.grad = x.grad + gx
-                x.grad.is_input = x.is_input
-                if x.creator is not None:
-                    add_creator(x.creator)
-            if not retain_grad:
-                for y in creator.outputs:
-                    y().grad = None
+    def backward(self) -> None:
+        backward(self)
 
     @property
     def id(self) -> str:
@@ -113,6 +79,9 @@ class Tensor(ITensor):
     @property
     def dtype(self):
         return self.data.dtype
+
+    def init_grad(self):
+        self.grad = Tensor(data=np.ones_like(self))
 
     def __len__(self):
         return len(self.data)

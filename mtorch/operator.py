@@ -498,7 +498,10 @@ class Sum(Operator):
         super().__init__()
         self.__keepdims = keep_dims
         if axes is not None:
-            self.__axes = tuple(axes)
+            if isinstance(axes, int):
+                self.__axes = (axes,)
+            else:
+                self.__axes = tuple(axes)
         else:
             self.__axes = None
 
@@ -675,6 +678,39 @@ def mean_square_loss(y_actual, y_expect) -> ITensor:
     return MeanSquareLoss()(y_actual, y_expect)
 
 
+class CrossEntropyLoss(Operator):
+    """
+    softmax + 交叉熵损失
+    """
+
+    _axis: int
+
+    def __init__(self, axis: int = 1):
+        super().__init__()
+        self._axis = axis
+
+    def forward(self, x: np.ndarray, t: np.ndarray):
+        y = _logsoftmax(x, axis=self._axis)
+        N = x.shape[0]
+        log_p = y[np.arange(N), t.ravel()]
+        return -log_p.sum() / N
+
+    def backward(self, dout):
+        # TODO:这里还需要改善，目前只支持二维数组
+        x, t = self.inputs
+        N, CLS_NUM = x.shape
+        dout *= 1 / N
+        y = softmax(x, axis=self._axis)
+        # convert to one-hot
+        t_onehot = np.eye(CLS_NUM, dtype=t.dtype)[t.data]
+        y = (y - t_onehot) * dout
+        return y
+
+
+def crossEntropyLoss(x, t, axis: int = 1) -> ITensor:
+    return CrossEntropyLoss(axis=axis)(x, t)
+
+
 # ==========================================================================
 # 损失算子
 # ==========================================================================
@@ -699,6 +735,95 @@ class Sigmoid(Operator):
 
 def sigmoid(x) -> ITensor:
     return Sigmoid()(x)
+
+
+class ReLU(Operator):
+    def forward(self, x: np.ndarray) -> np.ndarray:
+        return np.maximum(x, 0.0)
+
+    def backward(self, dout: ITensor) -> ITensor:
+        x = self.inputs[0]
+        # TODO:二阶求导有问题
+        return dout * (x.data > 0)
+
+
+def relu(x) -> ITensor:
+    return ReLU()(x)
+
+
+class Softmax(Operator):
+    """
+    通常只在输出层使用的激活函数
+    """
+
+    _axis: int  # 按哪个维度进行softmax，默认最后一个维度
+
+    def __init__(self, axis: int = 1):
+        super().__init__()
+        self._axis = axis
+
+    def forward(self, x: np.ndarray) -> np.ndarray:
+        return _softmax(x, axis=self._axis)
+
+    def backward(self, dout: ITensor) -> ITensor:
+        ei_div_esum: ITensor = self.outputs[0]()
+        """
+        xi - 输入元素
+        ei - 分子元素，ei = exp(xi)
+        S - 分母元素，S = e1 + e2 + ... + ei
+        y - 前向传播输出，y = ei * 1/S
+        
+        反向传播时：
+        
+        分子链路：1/S * ei * douti（自然指数求导），即为y
+        单个xi的分母链路：ei * sum(ei * douti) * -1/(S平方)，但是这个分母会传播到每个x，所以最终xi的导数是所有的相加就约掉了一个x
+        
+        """
+        dxi: ITensor = ei_div_esum * dout  # 单个元素反向传播
+        dxsum: ITensor = -ei_div_esum * sum(
+            dxi, axes=self._axis, keepdims=True
+        )  # 下方和
+        return dxi + dxsum
+
+
+def softmax(x, axis: int = 1) -> ITensor:
+    return Softmax(axis=axis)(x)
+
+
+class LogSoftmax(Softmax):
+    """
+    对传统softmax套了一个log，利用对数消除分子的指数的计算，极大减少指数计算的溢
+    出。也可以很好的配合交叉熵损失使用。x漂移根据等式来看是恒等变换，所以计算导
+    数时不需要考虑偏移
+    """
+
+    def forward(self, x):
+        return _logsoftmax(x, axis=self._axis)
+
+    def backward(self, dout: ITensor) -> ITensor:
+        y: ITensor = self.outputs[0]()
+        return dout - exp(y) * sum(dout, axes=self._axis, keepdims=True)
+
+
+def logSoftmax(x, axis: int = 1) -> ITensor:
+    return LogSoftmax(axis=axis)(x)
+
+
+def _softmax(x: np.ndarray, axis: int) -> np.ndarray:
+    """
+    无损数值优化，数学等价、梯度不变，专门压制exp的浮点溢出/下溢，是工业实现
+    Softmax的标准固定写法。
+    """
+    xmax = x.max(axis=axis, keepdims=True)
+    y = np.exp(x - xmax)
+    y /= y.sum(axis=axis, keepdims=True)
+    return y
+
+
+def _logsoftmax(x: np.ndarray, axis: int) -> np.ndarray:
+    xmax = x.max(axis=axis, keepdims=True)
+    y = np.exp(x - xmax)
+    return x - xmax - np.log(y.sum(axis=axis, keepdims=True))
 
 
 # ==========================================================================
