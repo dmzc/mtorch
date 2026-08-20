@@ -1,7 +1,7 @@
-from mtorch.interfaces import ITensor
+from mtorch.interfaces import ITensor, IDataset, IDataLoader
 from mtorch.tensor import Tensor
 import mtorch.operator as F
-from mtorch.render import render
+from mtorch.utils.render.render import render
 from mtorch.nn import (
     Module,
     Sequential,
@@ -13,6 +13,12 @@ from mtorch.nn import (
     LogSoftmax,
 )
 from mtorch.optim import SGD, Adam
+from mtorch.utils.data import (
+    DataLoader,
+    Dataset,
+    SprialDataset,
+    UnivariateFunctionDataset,
+)
 
 __version__ = "0.0.13"
 
@@ -47,4 +53,13 @@ __all__ = [
     "MeanSquareLoss",
     "SGD",
     "Adam",
+    "CrossEntroyLoss",
+    "Softmax",
+    "LogSoftmax",
+    "IDataset",
+    "IDataLoader",
+    "DataLoader",
+    "Dataset",
+    "SprialDataset",
+    "UnivariateFunctionDataset",
 ]

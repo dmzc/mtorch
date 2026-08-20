@@ -6,7 +6,7 @@ def backward(tensor: ITensor) -> None:
     if tensor.creator is None:
         return
 
-    if tensor is None:
+    if tensor.grad is None:
         tensor.init_grad()
 
     creators: list[IOperator] = []
