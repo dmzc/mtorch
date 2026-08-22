@@ -1,7 +1,5 @@
 from mtorch.interfaces import ITensor, IDataset, IDataLoader
-from mtorch.tensor import Tensor
-import mtorch.operator as F
-from mtorch.utils.render.render import render
+from mtorch.core import Tensor, F, ENABLE_BACKPROGATION, pkg_enabled
 from mtorch.nn import (
     Module,
     Sequential,
@@ -13,7 +11,8 @@ from mtorch.nn import (
     LogSoftmax,
 )
 from mtorch.optim import SGD, Adam
-from mtorch.utils.data import (
+import mtorch.utils as mutils
+from mtorch.utils import (
     DataLoader,
     Dataset,
     SprialDataset,
@@ -45,7 +44,6 @@ __all__ = [
     "ITensor",
     "Tensor",
     "F",
-    "render",
     "Module",
     "Sequential",
     "Linear",
@@ -62,4 +60,7 @@ __all__ = [
     "Dataset",
     "SprialDataset",
     "UnivariateFunctionDataset",
+    "mutils",
+    "ENABLE_BACKPROGATION",
+    "pkg_enabled",
 ]

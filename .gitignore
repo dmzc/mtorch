@@ -1,7 +1,9 @@
 **/__pycache__/
 .pytest_cache
-test_report.md
 signal_diagram*
 dist/
 mtorch.egg-info
 .ipynb_checkpoints
+/draft/data/
+/mtorch/tests/_dirs
+/mtorch/tests/test_report.md

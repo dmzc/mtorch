@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 from mtorch import Sequential, Linear, Sigmoid, SGD, MeanSquareLoss, ITensor
 from mtorch import UnivariateFunctionDataset, DataLoader
 
+r"""
+mlp网络解决线性回归
+"""
 
 # 超参数
 lr = 0.2
@@ -19,8 +22,9 @@ losser = MeanSquareLoss()
 
 dataloader = DataLoader(
     dataset=UnivariateFunctionDataset(
-        func=lambda x: np.sin(np.pi * 2 * x) + 2, data_size=100, batch_size=batch_size
+        func=lambda x: np.sin(np.pi * 2 * x) + 2, data_size=100
     ),
+    batch_size=batch_size,
 )
 for index in range(epoch):
     for x, y in dataloader:

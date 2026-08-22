@@ -23,7 +23,6 @@ class Dataset(IDataset):
         self._enable_label = enable_label
         self._data = None
         self._label = None
-        self._external_axes = None
 
     def __len__(self):
         self.__init_data()
@@ -61,11 +60,10 @@ class Dataset(IDataset):
         """
         raise f"Subclass of Dataset must implements fetch_data"
 
-    def graph(self, title: str = None, imdiately_show=True, axes: Axes = None):
+    def graph(self, title: str = None, imdiately_show=True):
         r"""
         子类不要重写此方法，可视化请重写_graph
         """
-        self._external_axes = axes
         self.__init_data()
         plt.rcParams["font.sans-serif"] = ["SimHei"]  # 用黑体显示中文
         plt.rcParams["axes.unicode_minus"] = False  # 正常显示负号
@@ -74,7 +72,6 @@ class Dataset(IDataset):
         plt.tight_layout()
         if imdiately_show:
             plt.show()
-        self._external_axes = None
 
     def _graph(self) -> None:
         r"""
@@ -214,3 +211,27 @@ class SprialDataset(Dataset):
 
     def get_category_info(self) -> tuple[list[str], list[str]]:
         return (["o", "x", "^"], ["orange", "blue", "green"])
+
+
+class CachedDataset(Dataset):
+    r"""
+    TODO:大数据集、类似操作系统虚拟文件系统
+    """
+
+    pass
+
+
+class MNIST(CachedDataset):
+    r"""
+    TODO:MNIST数据集
+    """
+
+    pass
+
+
+class FashionMNIST(CachedDataset):
+    r"""
+    TODO:Fashion-MNIST
+    """
+
+    pass

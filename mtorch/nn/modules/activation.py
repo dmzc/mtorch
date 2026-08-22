@@ -1,5 +1,5 @@
 from .module import Module
-import mtorch.operator as F
+import mtorch.core.operator as F
 from mtorch.interfaces import ITensor
 
 # 激活层

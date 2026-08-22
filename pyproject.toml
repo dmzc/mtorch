@@ -17,7 +17,14 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
 ]
 [project.optional-dependencies]
-dev = ["pytest>=7.0", "build", "twine"]
+dev = [
+    "pytest>=7.0",
+    "build=1.5.0",
+    "twine=7.0.0",
+    "zstandard=0.25.0",
+    "orjson=3.12.0",
+    "matplotlib=3.10.8",
+]
 
 [build-system]
 requires = ["hatchling"]
@@ -25,12 +32,8 @@ build-backend = "hatchling.build"
 
 # 源发行包 tar.gz
 [tool.hatch.build.targets.sdist]
-exclude = [
-    "/mtorch/draft.py", # 排除单个指定文件
-]
+exclude = ["/draft/"]
 
 # wheel包（pip安装用的包）
 [tool.hatch.build.targets.wheel]
-exclude = [
-    "/mtorch/draft.py", # 排除单个指定文件
-]
+exclude = ["/mtorch/utils/data/resources/", "/draft/"]

@@ -1,6 +1,6 @@
 from mtorch.nn.modules import Module
 from mtorch.interfaces import ITensor
-import mtorch.operator as F
+import mtorch.core.operator as F
 import numpy as np
 
 

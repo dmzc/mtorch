@@ -1,5 +1,4 @@
-from mtorch.data import Dataset, DataLoader
-from mtorch.data.dataset import UnivariateFunctionDataset, SprialDataset
+from mtorch.utils.data import Dataset, DataLoader
 import numpy as np
 import pytest
 

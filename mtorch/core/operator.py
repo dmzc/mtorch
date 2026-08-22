@@ -3,9 +3,9 @@ from abc import abstractmethod
 import math
 import numpy as np
 import weakref
-from mtorch.config import ENABLE_BACKPROGATION
+from mtorch.core.env import ENABLE_BACKPROGATION
 from mtorch.interfaces import ITensor, IOperator, ISliceType
-from mtorch.tensor import Tensor
+from mtorch.core.tensor import Tensor
 
 
 # ==========================================================================
