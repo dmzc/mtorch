@@ -4,7 +4,7 @@ import math
 import numpy as np
 import weakref
 from mtorch.core.env import ENABLE_BACKPROGATION
-from mtorch.interfaces import ITensor, IOperator, ISliceType
+from mtorch._interfaces import ITensor, IOperator, ISliceType
 from mtorch.core.tensor import Tensor
 
 

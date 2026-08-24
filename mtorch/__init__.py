@@ -1,28 +1,12 @@
-from mtorch.interfaces import ITensor, IDataset, IDataLoader
-from mtorch.core import Tensor, F, ENABLE_BACKPROGATION, pkg_enabled
-from mtorch.nn import (
-    Module,
-    Sequential,
-    Linear,
-    Sigmoid,
-    MeanSquareLoss,
-    CrossEntroyLoss,
-    Softmax,
-    LogSoftmax,
-)
-from mtorch.optim import SGD, Adam
-import mtorch.utils as mutils
-from mtorch.utils import (
-    DataLoader,
-    Dataset,
-    SprialDataset,
-    UnivariateFunctionDataset,
-)
+from mtorch._interfaces import ITensor, IDataset, IDataLoader
+from mtorch.core import Tensor, ENABLE_BACKPROGATION, pkg_enabled, operator
 
 __version__ = "0.0.13"
 
 
 def _setup():
+    import mtorch.core.operator as F
+
     Tensor.__add__ = F.add
     Tensor.__radd__ = F.add
     Tensor.__mul__ = F.mul
@@ -43,24 +27,9 @@ _setup()
 __all__ = [
     "ITensor",
     "Tensor",
-    "F",
-    "Module",
-    "Sequential",
-    "Linear",
-    "Sigmoid",
-    "MeanSquareLoss",
-    "SGD",
-    "Adam",
-    "CrossEntroyLoss",
-    "Softmax",
-    "LogSoftmax",
     "IDataset",
     "IDataLoader",
-    "DataLoader",
-    "Dataset",
-    "SprialDataset",
-    "UnivariateFunctionDataset",
-    "mutils",
     "ENABLE_BACKPROGATION",
     "pkg_enabled",
+    "operator",
 ]

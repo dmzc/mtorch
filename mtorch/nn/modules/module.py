@@ -1,4 +1,4 @@
-from mtorch.interfaces import IModule, ITensor
+from mtorch._interfaces import IModule, ITensor
 from collections.abc import Iterable
 
 

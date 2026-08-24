@@ -1,4 +1,4 @@
-from mtorch.interfaces import IDataLoader, IDataset
+from mtorch._interfaces import IDataLoader, IDataset
 import math
 import numpy as np
 from collections.abc import Callable

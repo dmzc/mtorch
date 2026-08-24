@@ -1,5 +1,5 @@
 from mtorch.nn.modules import Module
-from mtorch.interfaces import ITensor
+from mtorch._interfaces import ITensor
 import mtorch.core.operator as F
 import numpy as np
 

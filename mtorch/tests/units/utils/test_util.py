@@ -1,5 +1,5 @@
 import mtorch.utils as mutils
-from mtorch.tests import TEST_DIRS, mock_missing_package
+from mtorch.tests._utils import TEST_DIRS, mock_missing_package
 import numpy as np
 from pathlib import Path
 from collections.abc import Callable

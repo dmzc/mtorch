@@ -1,4 +1,5 @@
-from mtorch import F, Tensor, ITensor
+from mtorch import Tensor, ITensor
+import mtorch.core.operator as F
 import numpy as np
 
 

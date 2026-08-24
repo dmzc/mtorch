@@ -1,7 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from mtorch import Sequential, Linear, Sigmoid, SGD, MeanSquareLoss
-from mtorch import UnivariateFunctionDataset, DataLoader
+from mtorch.nn.modules import Sequential, Linear, Sigmoid, MeanSquareLoss
+from mtorch.optim import SGD
+from mtorch.utils.data.datasets import UnivariateFunctionDataset
+from mtorch.utils.data.dataloaders import DataLoader
 
 
 def test_mlp():

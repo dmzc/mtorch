@@ -1,4 +1,4 @@
-from mtorch.interfaces import IOperator, ITensor
+from mtorch._interfaces import IOperator, ITensor
 from graphviz import Digraph
 from pathlib import Path
 import os

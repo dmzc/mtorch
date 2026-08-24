@@ -1,4 +1,4 @@
-from mtorch import SprialDataset, UnivariateFunctionDataset
+from mtorch.utils.data.datasets import SprialDataset, UnivariateFunctionDataset
 import numpy as np
 
 

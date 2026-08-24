@@ -1,6 +1,17 @@
-from mtorch.nn.modules.module import Module
-from mtorch.nn.modules.sequential import Sequential
-from mtorch.nn.modules.activation import Sigmoid
-from mtorch.nn.modules.linear import Linear
-from mtorch.nn.modules.loss import MeanSquareLoss, CrossEntroyLoss
-from mtorch.nn.modules.softmax import Softmax, LogSoftmax
+from .module import Module
+from .sequential import Sequential
+from .activation import Sigmoid
+from .linear import Linear
+from .loss import MeanSquareLoss, CrossEntroyLoss
+from .softmax import Softmax, LogSoftmax
+
+__all__ = [
+    "Module",
+    "Sequential",
+    "Sigmoid",
+    "Linear",
+    "MeanSquareLoss",
+    "CrossEntroyLoss",
+    "Softmax",
+    "LogSoftmax",
+]

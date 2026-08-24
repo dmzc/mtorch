@@ -1,4 +1,5 @@
-from mtorch.utils.data import Dataset, DataLoader
+from mtorch.utils.data.datasets import Dataset
+from mtorch.utils.data.dataloaders import DataLoader
 import numpy as np
 import pytest
 
