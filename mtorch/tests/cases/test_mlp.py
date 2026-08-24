@@ -32,9 +32,9 @@ def test_mlp():
     for index in range(epoch):
 
         loss = None
-        for x, y in dataloader:
-            y_pred = model.forward(x)
-            loss = losser.forward(y_actual=y_pred, y_expect=y)
+        for item in dataloader:
+            y_pred = model.forward(item.data)
+            loss = losser.forward(y_actual=y_pred, y_expect=item.label)
             model.clear_grads()
             loss.backward()
             optimzer.step()

@@ -3,6 +3,10 @@ from contextlib import contextmanager
 import importlib.util
 import sys
 
+from mtorch.utils.data.datasets import Dataset
+import numpy as np
+
+
 TEST_DIRS = Path(__file__).parent / "_dirs"
 
 
@@ -45,3 +49,25 @@ def mock_missing_package(pkg_name: str):
             sys.modules.pop(pkg_name, None)
         else:
             sys.modules[pkg_name] = orig_sys_mod_val
+
+
+class MockDataset(Dataset):
+
+    mock_data: np.ndarray
+    mock_label: np.ndarray
+
+    def __init__(self, data: np.ndarray = None, label: np.ndarray = None):
+        super().__init__()
+        if data is not None and not isinstance(data, np.ndarray):
+            data = np.array(data)
+        if label is not None and not isinstance(label, np.ndarray):
+            label = np.array(label)
+        self.mock_data = data
+        self.mock_label = label
+
+    def load_data(self) -> tuple[np.ndarray] | np.ndarray:
+
+        if self.mock_label is not None:
+            return (self.mock_data, self.mock_label)
+        else:
+            return self.mock_data

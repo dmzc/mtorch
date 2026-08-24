@@ -1,15 +1,17 @@
 from ._dataset import Dataset
+import numpy as np
+
+r"""
+    螺旋数据集（三类）
+"""
 
 
 class SprialDataset(Dataset):
-    r"""
-    螺旋数据集（三类）
-    """
 
     _data_size_per_category: int
 
     def __init__(self, data_size_per_category: int = 100):
-        super().__init__(enable_label=True)
+        super().__init__()
         self._data_size_per_category = data_size_per_category
 
     def load_data(self):

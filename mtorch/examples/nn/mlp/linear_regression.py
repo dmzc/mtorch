@@ -30,8 +30,10 @@ dataloader = DataLoader(
     ),
     batch_size=batch_size,
 )
+x, y = None, None
 for index in range(epoch):
-    for x, y in dataloader:
+    for item in dataloader:
+        x, y = item.data, item.label
         y_pred = model.forward(x)
         loss = losser.forward(y_actual=y_pred, y_expect=y)
         model.clear_grads()

@@ -1,4 +1,4 @@
-from mtorch._interfaces import IDataset
+from mtorch._interfaces import IDataset, ITransform, DatasetData
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
@@ -13,51 +13,62 @@ class Dataset(IDataset):
 
     """
 
-    _enable_label: bool
     _data: np.ndarray
     _label: np.ndarray
+    _data_transform: ITransform
+    _label_transform: ITransform
 
-    def __init__(self, enable_label: bool = False):
+    def __init__(
+        self,
+        data_transform: ITransform = None,
+        label_transform: ITransform = None,
+    ):
         super().__init__()
-        self._enable_label = enable_label
         self._data = None
         self._label = None
+        self._data_transform = data_transform
+        self._label_transform = label_transform
 
     def __len__(self):
         self.__init_data()
         return len(self._data)
 
-    def __getitem__(self, slices) -> tuple[np.ndarray] | np.ndarray:
+    def __getitem__(self, slices) -> DatasetData:
         self.__init_data()
-        if self._enable_label:
-            return (self._data[slices], self._label[slices])
-        return self._data[slices]
+        r"""
+        不支持多维切片，而且总是返回数组，让接口一致
+        """
+        if isinstance(slices, tuple) and len(slices) > 1:  # 只支持第一维度切片
+            slices = slices[0]
+        if isinstance(slices, int):  # 单个数字直接返回了值，统一下
+            slices = slice(slices, slices + 1)
+
+        if self._label is not None:
+            return DatasetData(data=self._data[slices], label=self._label[slices])
+        return DatasetData(data=self._data[slices])
 
     def __init_data(self) -> None:
         if self._data is None:
             datas = self.load_data()
-            enable_label = self._enable_label
             if datas is None:
                 raise RuntimeError("There has no data.")
             if isinstance(datas, np.ndarray):
-                if enable_label:
-                    raise ValueError("Enable_label is True,label must be returned.")
                 self._data = datas
             elif isinstance(datas, tuple):
-                if enable_label and len(datas) < 2:
-                    raise ValueError("Enable_label is True,label must be returned.")
+                count = len(datas)
+                if count == 0:
+                    raise RuntimeError("There has no data.")
                 self._data = datas[0]
-                if enable_label:
+                if len(datas) >= 2:
                     self._label = datas[1]
 
     def load_data(self) -> tuple[np.ndarray] | np.ndarray:
         r"""
         子类必须实现此接口加载数据。
 
-        数据加载到_data，标签数据加载到
-        `_enable_label` 为`True`时，必须加载标签数据。
+        数据加载到_data，标签数据加载到_label
         """
-        raise f"Subclass of Dataset must implements fetch_data"
+        raise f"Subclass of Dataset must implements load_data"
 
     def graph(self, title: str = None, imdiately_show=True):
         r"""
@@ -134,7 +145,7 @@ class FunctionDataset(Dataset):
     _data_size: int
 
     def __init__(self, func, data_size: int = 100):
-        super().__init__(enable_label=True)
+        super().__init__()
         self._func = func
         self._data_size = data_size
 
@@ -158,3 +169,11 @@ class UnivariateFunctionDataset(FunctionDataset):
         x = np.arange(0, 1, 0.01)[:, np.newaxis]
         y = self._func(x)
         axes.scatter(x, y)
+
+
+class IterableDataset(IDataset):
+    def __len__(self):
+        return super().__len__()
+
+    def __getitem__(self, slices):
+        return super().__getitem__(slices)

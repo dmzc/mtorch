@@ -2,8 +2,9 @@ from __future__ import annotations
 import numpy as np
 import weakref
 from abc import ABC, abstractmethod
-from collections.abc import Iterable
+from collections.abc import Iterable, Callable
 from typing import TypeAlias
+from dataclasses import dataclass
 
 
 class ITensor(ABC):
@@ -43,7 +44,7 @@ class ITensor(ABC):
     def backward(self) -> None: ...
 
 
-class IOperator(ABC):
+class IOperator(Callable):
     """
     算子
     """
@@ -51,9 +52,7 @@ class IOperator(ABC):
     inputs: list[ITensor]
     outputs: list[weakref.ref[ITensor]]
     label: str
-    generation: int
-
-    def forward(self, *xs: np.ndarray) -> any: ...
+    generation: int  # TODO:deperated
 
     def backward(self, dout: ITensor) -> ITensor: ...
 
@@ -88,6 +87,12 @@ class IOptimizer(ABC):
 ISliceType: TypeAlias = int | slice | tuple[int | slice]
 
 
+@dataclass
+class DatasetData:
+    data: np.ndarray
+    label: np.ndarray = None
+
+
 class IDataset(ABC):
 
     def __len__(self) -> int:
@@ -96,9 +101,9 @@ class IDataset(ABC):
         """
         raise NotImplementedError(f"Subclasses of IDataset should implement __len__.")
 
-    def __getitem__(self, slices: ISliceType):
-        """
-        根据切片返回对应数据。
+    def __getitem__(self, slices: ISliceType) -> DatasetData:
+        r"""
+        根据切片返回对应数据，但是这个切片只对条数起作用。
         """
         raise NotImplementedError(
             f"Subclasses of IDataset should implement __getitem__."
@@ -146,3 +151,10 @@ class ITrainer(ABC):
 
     def evaluation(self) -> None:
         pass
+
+
+class ITransform(Callable[[any], any]):
+
+    def __repr__(self): ...
+
+    def __call__(self, *args, **kwds): ...

@@ -1,59 +1,11 @@
-from mtorch.utils.data.datasets import Dataset
+from mtorch.tests._utils import MockDataset
+from mtorch._interfaces import DatasetData
 from mtorch.utils.data.dataloaders import DataLoader
 import numpy as np
-import pytest
-
-
-class MockDataset(Dataset):
-
-    mock_data: np.ndarray
-    mock_label: np.ndarray
-
-    def __init__(
-        self, enable_label=False, data: np.ndarray = None, label: np.ndarray = None
-    ):
-        if data is not None and not isinstance(data, np.ndarray):
-            data = np.array(data)
-        if label is not None and not isinstance(label, np.ndarray):
-            label = np.array(label)
-        super().__init__(enable_label)
-        self.mock_data = data
-        self.mock_label = label
-
-    def load_data(self) -> tuple[np.ndarray] | np.ndarray:
-
-        if self.mock_label is not None:
-            return (self.mock_data, self.mock_label)
-        else:
-            return self.mock_data
-
-
-def test_dataset():
-
-    dataset = MockDataset(enable_label=True, data=[[1, 2], [3, 4]])
-    with pytest.raises(ValueError) as exec_info:
-        dataset[1]
-    assert "Enable_label is True,label must be returned." in str(
-        exec_info.value
-    ), "enable_label为True时必须返回标签数据"
-    dataset = MockDataset(
-        enable_label=True, data=[[1, 2], [3, 4], [5, 6]], label=[1, 2, 3]
-    )
-    assert len(dataset) == 3, "数据集长度正常获取"
-    data: tuple[np.ndarray] = dataset[0:1]
-    assert data[0].tolist() == [[1, 2]] and data[1].tolist() == [
-        1,
-    ], "enable_label为True时能正常返回标签数据"
-
-    data = dataset[2:10]
-    assert len(data[0]) == 1, "部分超出索引范围，只取没超出的"
-    data = dataset[6:10]
-    assert len(data[0]) == 0, "都超出索引范围，返回空"
 
 
 def test_dataLoader():
     dataset = MockDataset(
-        enable_label=True,
         data=[
             [1, 2],
             [3, 4],
@@ -74,8 +26,8 @@ def test_dataLoader():
     def get_result() -> list[tuple[np.ndarray]]:
         result: list[tuple[np.ndarray]] = []
         for data in dataloader:
-            data: tuple[np.ndarray] = data
-            result.append((data[0].tolist(), data[1].tolist()))
+            data: DatasetData = data
+            result.append((data.data.tolist(), data.label.tolist()))
         return result
 
     assert get_result() == [
