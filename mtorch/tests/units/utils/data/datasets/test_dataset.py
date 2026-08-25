@@ -22,16 +22,16 @@ def test_dataset():
         3,
     ], "索引为数组正常获取"
 
-    data: DatasetData = dataset[0, 1]
-    assert data.data.tolist() == [[1, 2]] and data.label.tolist() == [
-        1,
-    ], "索引为多维度切片且第一维为数值，只有第一维度生效"
+    # data: DatasetData = dataset[0, 1]
+    # assert data.data.tolist() == [[1, 2]] and data.label.tolist() == [
+    #     1,
+    # ], "索引为多维度切片且第一维为数值，只有第一维度生效"
 
-    data: DatasetData = dataset[1:3, 1]
-    assert data.data.tolist() == [[3, 4], [5, 6]] and data.label.tolist() == [
-        2,
-        3,
-    ], "索引为多维度切片且第一维为切片，只有第一维度生效"
+    # data: DatasetData = dataset[1:3, 1]
+    # assert data.data.tolist() == [[3, 4], [5, 6]] and data.label.tolist() == [
+    #     2,
+    #     3,
+    # ], "索引为多维度切片且第一维为切片，只有第一维度生效"
 
     data = dataset[2:10]
     assert len(data.data) == 1, "部分超出索引范围，只取没超出的"

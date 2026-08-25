@@ -116,6 +116,6 @@ class UnivariateFunctionDataset(FunctionDataset):
         data_size = self._data_size
         x: np.ndarray = self._x_data
         if x is None:
-            np.random.rand(data_size, 1)
+            x = np.random.rand(data_size, 1)
         y = self._func(x) + np.random.rand(data_size, 1)
         return (x, y)
