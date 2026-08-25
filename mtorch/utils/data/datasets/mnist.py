@@ -1,10 +1,5 @@
 from pathlib import Path
 
-# TODO:这应该只在examples中显示
-import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib.image import AxesImage
-
 from mtorch._interfaces import DatasetData, IDataset, _Dataset_Type
 from mtorch.utils.data.datasets.idx import IDXDataset
 
@@ -82,50 +77,3 @@ class Mnist(IDataset):
             file=data_file, work_dir=root_dir, all_data=True
         )
         self._label_idx_dataset = IDXDataset(file=label_file, work_dir=root_dir)
-
-    def graph(self):
-
-        index = -1
-        count = len(self)
-
-        axes_image: AxesImage = None
-
-        def _draw_image(
-            is_next=True,
-        ) -> tuple[np.ndarray, int] | None:
-            nonlocal index, axes_image
-            t_idx = None
-            if is_next:
-                t_idx = index + 1
-            else:
-                t_idx = index - 1
-            if t_idx < 0 or t_idx > count - 1:
-                return
-            index = t_idx
-            result = self[t_idx]
-            data = result.data[0]
-            label = result.label[0]
-            if axes_image is None:
-                axes_image = ax.imshow(data, cmap="gray")
-            else:
-                axes_image.set_data(data)
-            ax.set_title(f"[{t_idx+1}/{count}] label = {label}")
-            fig.canvas.draw_idle()
-
-        def _on_key(event):
-            if event.key == "right":
-                _draw_image()
-            elif event.key == "left":
-                _draw_image(is_next=False)
-            elif event.key == "q":
-                plt.close(fig)
-                return
-
-        fig, ax = plt.subplots(figsize=(6, 6))
-        ax.axis("off")
-
-        _draw_image()
-
-        fig.canvas.mpl_connect("key_press_event", _on_key)
-        plt.tight_layout()
-        plt.show(block=True)

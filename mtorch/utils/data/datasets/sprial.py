@@ -1,5 +1,6 @@
-from ._dataset import Dataset
 import numpy as np
+
+from ._dataset import Dataset
 
 r"""
     螺旋数据集（三类）
@@ -32,24 +33,6 @@ class Sprial(Dataset):
                 x[data_idx] = data
                 t[data_idx] = category
         return (x, t)
-
-    def _graph(self, title: str = None):
-        if title is None:
-            title = "螺旋数据集"
-        axes = self.create_subplot(title=title)
-        markers, colors = self.get_category_info()
-        data = self._data
-        label = self._label
-        for idx in range(len(data)):
-            category = label[idx]
-            item: np.ndarray = data[idx]
-            axes.scatter(
-                item[0],
-                item[1],
-                s=40,
-                marker=markers[category],
-                c=colors[category],
-            )
 
     def get_category_info(self) -> tuple[list[str], list[str]]:
         return (["o", "x", "^"], ["orange", "blue", "green"])

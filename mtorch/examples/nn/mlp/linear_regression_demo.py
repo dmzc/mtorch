@@ -1,11 +1,11 @@
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 from mtorch import ITensor
+from mtorch.nn.modules import Linear, MeanSquareLoss, Sequential, Sigmoid
 from mtorch.optim import SGD
-from mtorch.nn.modules import Sequential, Linear, Sigmoid, MeanSquareLoss
-from mtorch.utils.data.datasets import UnivariateFunctionDataset
 from mtorch.utils.data.dataloaders import DataLoader
+from mtorch.utils.data.datasets import UnivariateFunctionDataset
 
 r"""
 mlp网络解决线性回归

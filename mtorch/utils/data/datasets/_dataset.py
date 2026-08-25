@@ -1,17 +1,11 @@
-from mtorch._interfaces import IDataset, ITransform, DatasetData
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.axes import Axes
-import matplotlib as matplotlib
 from collections.abc import Callable
+
+import numpy as np
+
+from mtorch._interfaces import DatasetData, IDataset, ITransform
 
 
 class Dataset(IDataset):
-    r"""
-    TODO:
-        1. 一个数据集拆分成训练、验证、测试数据集
-
-    """
 
     _data: np.ndarray
     _label: np.ndarray
@@ -42,7 +36,7 @@ class Dataset(IDataset):
             if len(slices) == 1:
                 slices = slices[0]
             else:
-                raise TypeError(f"Does not support multi‑dimensional slicing!")
+                raise TypeError("Does not support multi‑dimensional slicing!")
         if isinstance(slices, int):  # 单个数字直接返回了值，统一下
             slices = slice(slices, slices + 1)
 
@@ -71,72 +65,24 @@ class Dataset(IDataset):
 
         数据加载到_data，标签数据加载到_label
         """
-        raise f"Subclass of Dataset must implements load_data"
+        raise NotImplementedError("Subclass of Dataset must implements load_data")
 
-    def graph(self, title: str = None, imdiately_show=True):
-        r"""
-        子类不要重写此方法，可视化请重写_graph
-        """
-        self.__init_data()
-        plt.rcParams["font.sans-serif"] = ["SimHei"]  # 用黑体显示中文
-        plt.rcParams["axes.unicode_minus"] = False  # 正常显示负号
-        self._graph()
-        # 自动调整画布内边距
-        plt.tight_layout()
-        if imdiately_show:
-            plt.show()
 
-    def _graph(self) -> None:
-        r"""
-        子类可以实现此接口以可视化的形式展示此数据，默认显示“xxx数据集没有实现可
-        视化方法”。
+class MemoryDataset(Dataset):
+    r"""
+    内存数据集，数据本来就在内存，传进来数据集做统一接口管理。
+    """
 
-        如果使用plt，此方法不要调用show，graph会根据需要决定是否调用plt.show
-        """
-
-        """
-        figure:图窗
-        axes:绘图对象
-        plt: pyplot 在内部维护一个全局状态：记录 “当前激活的 figure、当前激活的axes”。
-            plot.plot() 并不显式指定画到哪，它自动画到当前活跃的
-            Axes。plot.subplots() 是 pyplot 模块提供的工厂函数，用来创建 Figure
-            + Axes。创建完之后，后续绘图全部直接操作ax对象，不再依赖 pyplot 全局
-            状态
-        """
-        axes = self.create_subplot()
-        # 清除坐标轴刻度
-        axes.set_xticks([])
-        axes.set_yticks([])
-
-        # 在画布中心放置文本
-        axes.text(
-            0.5,
-            0.5,
-            f"{self.__class__.__name__}不支持可视化",
-            fontsize=14,
-            ha="center",
-            va="center",
-            transform=axes.transAxes,
-        )
-        # 移除边框
-        axes.spines["top"].set_visible(False)
-        axes.spines["right"].set_visible(False)
-        axes.spines["bottom"].set_visible(False)
-        axes.spines["left"].set_visible(False)
-
-    def create_subplot(
+    def __init__(
         self,
-        figsize: tuple[int] = (6, 4),
-        show_toolbar: bool = False,
-        title: str = None,
-    ) -> Axes:
-        if title is None:
-            title = " "
-        figure, axes = plt.subplots(figsize=figsize)
-        figure.canvas.manager.set_window_title(title)
-        if not show_toolbar:
-            figure.canvas.manager.toolbar.setVisible(False)  # 去掉toolbar显示
-        return axes
+        data_transform=None,
+        label_transform=None,
+        data: np.ndarray = None,
+        label: np.ndarray = None,
+    ):
+        super().__init__(data_transform, label_transform)
+        self._data = data
+        self._label = label
 
 
 class FunctionDataset(Dataset):
@@ -160,15 +106,16 @@ class UnivariateFunctionDataset(FunctionDataset):
     参数为np.ndarray
     """
 
+    _x_data: np.ndarray
+
+    def __init__(self, func, data_size=100, x_data: np.ndarray = None):
+        super().__init__(func, data_size)
+        self._x_data = x_data
+
     def load_data(self):
         data_size = self._data_size
-        x: np.ndarray = np.random.rand(data_size, 1)
+        x: np.ndarray = self._x_data
+        if x is None:
+            np.random.rand(data_size, 1)
         y = self._func(x) + np.random.rand(data_size, 1)
         return (x, y)
-
-    def _graph(self, title: str = None):
-        axes = self.create_subplot(title=title)
-        # 这里为了画出正弦图像，要用连续的自变量，而x随机生成的，所以不满足要求
-        x = np.arange(0, 1, 0.01)[:, np.newaxis]
-        y = self._func(x)
-        axes.scatter(x, y)
