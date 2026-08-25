@@ -1,8 +1,9 @@
 from mtorch.utils.data.datasets._dataset import (
-    UnivariateFunctionDataset,
     Dataset,
     FunctionDataset,
+    UnivariateFunctionDataset,
 )
-from mtorch.utils.data.datasets.sprial import SprialDataset
+from mtorch.utils.data.datasets.mnist import Mnist
+from mtorch.utils.data.datasets.sprial import Sprial
 
-__all__ = ["UnivariateFunctionDataset", "Dataset", "FunctionDataset", "SprialDataset"]
+__all__ = ["Dataset", "FunctionDataset", "Mnist", "Sprial", "UnivariateFunctionDataset"]

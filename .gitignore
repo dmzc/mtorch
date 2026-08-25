@@ -7,3 +7,4 @@ mtorch.egg-info
 /draft/data/
 /mtorch/tests/_dirs
 /mtorch/tests/test_report.md
+/mtorch/utils/data/resources/

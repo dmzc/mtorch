@@ -6,7 +6,7 @@ r"""
 """
 
 
-class SprialDataset(Dataset):
+class Sprial(Dataset):
 
     _data_size_per_category: int
 

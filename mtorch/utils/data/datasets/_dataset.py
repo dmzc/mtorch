@@ -38,8 +38,11 @@ class Dataset(IDataset):
         r"""
         不支持多维切片，而且总是返回数组，让接口一致
         """
-        if isinstance(slices, tuple) and len(slices) > 1:  # 只支持第一维度切片
-            slices = slices[0]
+        if isinstance(slices, tuple):  # 只支持第一维度切片
+            if len(slices) == 1:
+                slices = slices[0]
+            else:
+                raise TypeError(f"Does not support multi‑dimensional slicing!")
         if isinstance(slices, int):  # 单个数字直接返回了值，统一下
             slices = slice(slices, slices + 1)
 
@@ -169,11 +172,3 @@ class UnivariateFunctionDataset(FunctionDataset):
         x = np.arange(0, 1, 0.01)[:, np.newaxis]
         y = self._func(x)
         axes.scatter(x, y)
-
-
-class IterableDataset(IDataset):
-    def __len__(self):
-        return super().__len__()
-
-    def __getitem__(self, slices):
-        return super().__getitem__(slices)

@@ -12,8 +12,9 @@ class Object:
     def __init__(self, data: np.ndarray):
         self._data = data
 
-    def __getitem__(obj: Object, slices: tuple[int | any]):
+    def __getitem__(self, slices: tuple[int | any]):
         print(f"{slices}")
+        return self._data[slices]
 
     def __setitem__(self, key, value):
         self._data[key] = value
@@ -33,7 +34,8 @@ obj = Object(np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12], [13, 14, 1
 # obj[:2:4]  # slice(None, 2, 4)
 # obj[1:4:1]  # slice(1, 4, 1)
 # obj[0:2] = [[34, 45, 56], [78, 89, 999]]
-# print(obj._data)
+obj._data = obj[[0, 2]]  # [0,2]
+print(obj._data)
 # fmt:off
 tensor1 = Tensor([
     [1, 2, 3], 
@@ -92,7 +94,7 @@ def load_json(path:str|Path,decompress=False):
 # path=Path("c:/tes/ted.d/ted.DS")
 # print("filename",path.name)
 # with open(Path(__file__).parent/"data/test.json","wb") as f:
-    
+
 #     # 这里b代表是直接写字节，不是普通字符串
 #     f.write(b"[")
 #     f.write(orjson.dumps([12,23,34,45]))
@@ -101,6 +103,6 @@ def load_json(path:str|Path,decompress=False):
 #     f.write(b"]")
 # with open(Path(__file__).parent/"data/test.json","wb") as f:
 #     import json
-    
+
 #     obj=[[12,34],[12,34]]
 #     f.write(json.dumps(obj).encode("utf-8"))

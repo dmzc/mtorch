@@ -1,10 +1,12 @@
 from __future__ import annotations
-import numpy as np
+
 import weakref
 from abc import ABC, abstractmethod
-from collections.abc import Iterable, Callable
-from typing import TypeAlias
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
+from typing import Literal, TypeAlias
+
+import numpy as np
 
 
 class ITensor(ABC):
@@ -84,7 +86,9 @@ class IOptimizer(ABC):
     def step(self): ...
 
 
-ISliceType: TypeAlias = int | slice | tuple[int | slice]
+_Slice_Type: TypeAlias = int | slice | tuple[int | slice]
+
+_Dataset_Type: TypeAlias = Literal["train", "test", "val"]
 
 
 @dataclass
@@ -101,7 +105,7 @@ class IDataset(ABC):
         """
         raise NotImplementedError(f"Subclasses of IDataset should implement __len__.")
 
-    def __getitem__(self, slices: ISliceType) -> DatasetData:
+    def __getitem__(self, slices: _Slice_Type) -> any:
         r"""
         根据切片返回对应数据，但是这个切片只对条数起作用。
         """

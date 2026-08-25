@@ -1,5 +1,5 @@
-from mtorch._interfaces import ITensor, IDataset, IDataLoader, DatasetData, ITransform
-from mtorch.core import Tensor, ENABLE_BACKPROGATION, pkg_enabled, operator
+from mtorch._interfaces import DatasetData, IDataLoader, IDataset, ITensor, ITransform
+from mtorch.core import ENABLE_BACKPROGATION, ROOT_DIR, Tensor, operator, pkg_enabled
 
 __version__ = "0.0.13"
 
@@ -25,13 +25,14 @@ def _setup():
 
 _setup()
 __all__ = [
-    "ITensor",
-    "Tensor",
-    "IDataset",
-    "IDataLoader",
-    "ITransform",
     "ENABLE_BACKPROGATION",
-    "pkg_enabled",
-    "operator",
+    "ROOT_DIR",
     "DatasetData",
+    "IDataLoader",
+    "IDataset",
+    "ITensor",
+    "ITransform",
+    "Tensor",
+    "operator",
+    "pkg_enabled",
 ]
