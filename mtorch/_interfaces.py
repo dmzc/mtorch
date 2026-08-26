@@ -4,8 +4,7 @@ import weakref
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
-from typing import Literal, TypeAlias
-
+from typing import Literal, TypeAlias, Any
 import numpy as np
 
 
@@ -68,7 +67,7 @@ class IOperator(Callable):
 class IModule(ABC):
 
     @abstractmethod
-    def forward(self, x: any) -> any: ...
+    def forward(self, x: Any) -> Any: ...
 
     @abstractmethod
     def params(self) -> Iterable[ITensor]: ...
@@ -86,9 +85,9 @@ class IOptimizer(ABC):
     def step(self): ...
 
 
-_Slice_Type: TypeAlias = int | slice | tuple[int | slice]
+Slice_Type: TypeAlias = int | list[int] | slice | tuple[int | slice]
 
-_Dataset_Type: TypeAlias = Literal["train", "test", "val"]
+Dataset_Type: TypeAlias = Literal["train", "test", "val"]
 
 
 @dataclass
@@ -103,20 +102,25 @@ class IDataset(ABC):
         """
         返回数据量
         """
-        raise NotImplementedError(f"Subclasses of IDataset should implement __len__.")
+        raise NotImplementedError("Subclasses of IDataset should implement __len__.")
 
-    def __getitem__(self, slices: _Slice_Type) -> any:
+    def __getitem__(self, slices: Slice_Type) -> Any:
         r"""
         根据切片返回对应数据，但是这个切片只对条数起作用。
         """
         raise NotImplementedError(
-            f"Subclasses of IDataset should implement __getitem__."
+            "Subclasses of IDataset should implement __getitem__."
         )
 
 
 class IDataLoader(ABC):
-    """
-    数据集
+    r"""
+    数据加载器。
+
+    注意：返回的数据是原始数组的视图，与内部数据集共享内存缓冲区。
+    外部直接修改返回数组的元素，会污染数据集内部原始数据。
+    若需要对返回数据做写操作，务必先调用 `.copy()` 生成独立副本。
+    TODO:
     """
 
     _dataset: IDataset
@@ -126,7 +130,7 @@ class IDataLoader(ABC):
         返回迭代器对象，和__next__配合使用
         """
         raise NotImplementedError(
-            f"Subclasses of IDataLoader should implement __iter__."
+            "Subclasses of IDataLoader should implement __iter__."
         )
 
     def __next__(self) -> tuple[np.ndarray] | np.ndarray:
@@ -134,7 +138,7 @@ class IDataLoader(ABC):
         迭代器对象返回下一条或下一批数据
         """
         raise NotImplementedError(
-            f"Subclasses of IDataLoader should implement __next__."
+            "Subclasses of IDataLoader should implement __next__."
         )
 
 
@@ -148,7 +152,7 @@ class ITrainer(ABC):
     _model: IModule  # 模型
     _dataloader: IDataLoader  # 数据加载器
     _optimizer: IOptimizer  # 梯度更新器
-    _params: any  # 超参数
+    _params: Any  # 超参数
 
     def train(self) -> None:
         pass
@@ -157,7 +161,18 @@ class ITrainer(ABC):
         pass
 
 
-class ITransform(Callable[[any], any]):
+class ITransform(Callable[[Any], Any]):
+    r"""
+    数据变换接口。
+
+    可调用实例，执行样本预处理逻辑。
+    输入可能是数据集原始数组的内存视图，**禁止对入参做原地修改**，
+    实现必须返回变换后的独立数组副本，避免污染底层原始数据。
+
+    Notes:
+        - 仅支持 numpy.ndarray 作为输入输出
+        - __call__ 接收单样本数组，返回处理完成的样本数组
+    """
 
     def __repr__(self): ...
 

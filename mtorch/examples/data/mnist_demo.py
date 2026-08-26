@@ -1,3 +1,7 @@
+r"""mnist数据集
+mnist数据集数据展示
+"""
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.image import AxesImage
@@ -32,7 +36,7 @@ def _draw_image(
     data = result.data[0]
     label = result.label[0]
     if axes_image is None:
-        axes_image = ax.imshow(data, cmap="gray")
+        axes_image = ax.imshow(data, cmap="gray", interpolation="nearest")
     else:
         axes_image.set_data(data)
     ax.set_title(f"[{t_idx+1}/{count}] label = {label}")

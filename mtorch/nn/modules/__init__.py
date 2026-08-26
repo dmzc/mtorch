@@ -1,14 +1,15 @@
-from .module import Module
-from .sequential import Sequential
-from .activation import Sigmoid
-from .linear import Linear
-from .loss import MeanSquareLoss, CrossEntroyLoss
-from .softmax import Softmax, LogSoftmax
+from ._module import Module
+from ._sequential import Sequential
+from ._activation import Sigmoid, Relu
+from ._linear import Linear
+from ._loss import MeanSquareLoss, CrossEntroyLoss
+from ._softmax import Softmax, LogSoftmax
 
 __all__ = [
     "Module",
     "Sequential",
     "Sigmoid",
+    "Relu",
     "Linear",
     "MeanSquareLoss",
     "CrossEntroyLoss",

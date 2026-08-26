@@ -1,25 +1,33 @@
 from pathlib import Path
 
-from mtorch._interfaces import DatasetData, IDataset, _Dataset_Type
-from mtorch.utils.data.datasets.idx import IDXDataset
+from mtorch._interfaces import DatasetData, Dataset_Type, ITransform
+from ._dataset import AbstractDataset
+from ._idx import IDXDataset
+from typing import Optional
 
 
-class Mnist(IDataset):
+class Mnist(AbstractDataset):
 
     _root_dir: Path
 
-    _dataset_type: _Dataset_Type
+    _dataset_type: Dataset_Type
 
     _ensured: bool
 
-    _data_idx_dataset: IDXDataset
+    _data_idx_dataset: Optional[IDXDataset]
 
-    _label_idx_dataset: IDXDataset
+    _label_idx_dataset: Optional[IDXDataset]
 
-    def __init__(self, root_dir: str | Path, dataset_type: _Dataset_Type):
-        super().__init__()
+    def __init__(
+        self,
+        root_dir: str | Path,
+        dataset_type: Dataset_Type,
+        data_transform: ITransform = None,
+        label_transform: ITransform = None,
+    ):
+        super().__init__(data_transform=data_transform, label_transform=label_transform)
         root_dir = Path(root_dir)
-        if not root_dir.is_dir():
+        if root_dir.exists() and not root_dir.is_dir():
             raise NotADirectoryError("root must point to an existing directory.")
         self._root_dir = root_dir
         self._dataset_type = dataset_type
@@ -27,11 +35,11 @@ class Mnist(IDataset):
         self._data_idx_dataset = None
         self._label_idx_dataset = None
 
-    def __len__(self):
+    def len(self):
         self._ensure()
         return len(self._data_idx_dataset)
 
-    def __getitem__(self, slices: int | list[int]) -> DatasetData:
+    def get_item(self, slices: int | list[int]) -> DatasetData:
         self._ensure()
         return DatasetData(
             data=self._data_idx_dataset[slices], label=self._label_idx_dataset[slices]

@@ -1,4 +1,4 @@
-from .module import Module
+from ._module import Module
 import mtorch.core.operator as F
 from mtorch._interfaces import ITensor
 
@@ -8,3 +8,8 @@ from mtorch._interfaces import ITensor
 class Sigmoid(Module):
     def forward(self, x) -> ITensor:
         return F.sigmoid(x)
+
+
+class Relu(Module):
+    def forward(self, x) -> ITensor:
+        return F.relu(x)

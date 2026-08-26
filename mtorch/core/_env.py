@@ -1,3 +1,6 @@
+import pathlib
+
+
 def pkg_enabled(pkg_name: str, pkg_version: str = None) -> bool:
     r"""
     判断环境是否安装了某个包。
@@ -21,7 +24,5 @@ def pkg_enabled(pkg_name: str, pkg_version: str = None) -> bool:
 # 是否启用反向传播
 ENABLE_BACKPROGATION = True  # TODO:不用这个，应该是自动判断的
 
-
-import pathlib
 
 ROOT_DIR = pathlib.Path(__file__).parent.parent

@@ -1,3 +1,7 @@
+r"""一元函数线性回归
+用mlp网络解决一元函数的线性回归，数据集为sin形式的数据
+"""
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -7,9 +11,6 @@ from mtorch.optim import SGD
 from mtorch.utils.data.dataloaders import DataLoader
 from mtorch.utils.data.datasets import UnivariateFunctionDataset
 
-r"""
-mlp网络解决线性回归
-"""
 
 # 超参数
 lr = 0.2

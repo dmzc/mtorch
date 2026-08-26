@@ -104,3 +104,9 @@ class DataLoader(IDataLoader):
 
     def reset(self) -> None:
         self.__initialized = False
+
+
+class ShareDataLoader(IDataLoader):
+    r"""数据加载器
+    TODO：将一个大数据集划分为训练集、验证集、测试集
+    """

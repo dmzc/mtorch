@@ -1,6 +1,6 @@
 from typing import overload, OrderedDict
 
-from mtorch.nn.modules.module import Module
+from mtorch.nn.modules._module import Module
 import torch
 
 torch.nn.Linear

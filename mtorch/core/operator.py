@@ -3,9 +3,9 @@ from abc import abstractmethod
 import math
 import numpy as np
 import weakref
-from mtorch.core.env import ENABLE_BACKPROGATION
-from mtorch._interfaces import ITensor, IOperator, _Slice_Type
-from mtorch.core.tensor import Tensor
+from mtorch.core._env import ENABLE_BACKPROGATION
+from mtorch._interfaces import ITensor, IOperator, Slice_Type
+from mtorch.core._tensor import Tensor
 
 
 # ==========================================================================
@@ -420,9 +420,9 @@ def transpose(x: np.ndarray | ITensor | list[int], axes=None):
 
 class GetItem(Operator):
 
-    __slices: _Slice_Type
+    __slices: Slice_Type
 
-    def __init__(self, slices: _Slice_Type):
+    def __init__(self, slices: Slice_Type):
         super().__init__()
         self.__slices = slices
 
@@ -434,14 +434,14 @@ class GetItem(Operator):
         return set_item(left, dout, self.__slices)
 
 
-def get_item(x: any, slices: _Slice_Type) -> ITensor:
+def get_item(x: any, slices: Slice_Type) -> ITensor:
     return GetItem(slices)(x)
 
 
 class SetItem(Operator):
-    _slices: _Slice_Type
+    _slices: Slice_Type
 
-    def __init__(self, slices: _Slice_Type):
+    def __init__(self, slices: Slice_Type):
         super().__init__()
         self._slices = slices
 
@@ -464,7 +464,7 @@ class SetItem(Operator):
         return dleft, dright
 
 
-def set_item(x_left: any, y_left: any, slices: _Slice_Type):
+def set_item(x_left: any, y_left: any, slices: Slice_Type):
     return SetItem(slices=slices)(x_left, y_left)
 
 

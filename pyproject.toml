@@ -37,3 +37,9 @@ exclude = ["/draft/"]
 # wheel包（pip安装用的包）
 [tool.hatch.build.targets.wheel]
 exclude = ["/mtorch/utils/data/resources/", "/draft/"]
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = [
+    "RUF022", # 关闭 __all__ 必须排序警告
+    "I001",   # 关闭import符号排序
+]

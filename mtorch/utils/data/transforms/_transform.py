@@ -8,21 +8,22 @@ class Compose(ITransform):
 
     __transforms: list[ITransform]
 
-    def __init__(self, transforms: list[ITransform]):
+    def __init__(self, *transforms: list[ITransform]):
         self.__transforms = transforms
 
     def __repr__(self):
-        name = "->".join([transform for transform in self.__transforms])
+        name = "->".join([str(transform) for transform in self.__transforms])
         return f"Composed Transforms:{name}"
 
     def __call__(self, x):
         for tf in self.__transforms:
             x = tf(x)
-        return
+        return x
 
 
 class Branch(ITransform):
     r"""
+    TODO:
     并行执行变换，一个输入多个输出，每个输出互不干扰
     """
 

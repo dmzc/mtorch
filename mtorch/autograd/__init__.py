@@ -1,4 +1,4 @@
-from . import functional
-from .functional import backward
+from . import _functional
+from ._functional import backward
 
-__all__ = ["functional", "backward"]
+__all__ = ["_functional", "backward"]

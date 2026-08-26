@@ -1,6 +1,6 @@
 from __future__ import annotations
 import numpy as np
-from mtorch.core.env import ENABLE_BACKPROGATION
+from mtorch.core._env import ENABLE_BACKPROGATION
 from mtorch._interfaces import ITensor, IOperator
 from mtorch.autograd import backward
 

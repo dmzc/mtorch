@@ -1,3 +1,7 @@
+r"""一元函数数据集
+一元函数数据集数据展示-sin函数
+"""
+
 import matplotlib.pyplot as plt
 import numpy as np
 

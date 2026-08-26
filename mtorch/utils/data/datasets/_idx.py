@@ -71,8 +71,11 @@ class IDX:
 
         indices: list[int] = None
 
-        if index is not None and isinstance(index, int):
-            indices = [index]
+        if index is not None:
+            if isinstance(index, int):
+                indices = [index]
+            else:
+                indices = index
 
         (dtype_size, dtype) = self._get_dtype(self._type_code)
         dtype_size = dtype_size * 8
@@ -89,8 +92,10 @@ class IDX:
                     (self._image_count, *self._image_shape)
                 )
 
-            data = self._the_all_data[indices]
-            return data
+            if indices is None:
+                return self._the_all_data[:]
+            else:
+                return self._the_all_data[indices]
 
         count = self._image_count
         data_offset = self._offset

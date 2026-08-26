@@ -3,7 +3,7 @@ from contextlib import contextmanager
 import importlib.util
 import sys
 
-from mtorch.utils.data.datasets import Dataset
+from mtorch.utils.data.datasets import AbstractDataset
 import numpy as np
 
 
@@ -51,7 +51,7 @@ def mock_missing_package(pkg_name: str):
             sys.modules[pkg_name] = orig_sys_mod_val
 
 
-class MockDataset(Dataset):
+class MockDataset(AbstractDataset):
 
     mock_data: np.ndarray
     mock_label: np.ndarray

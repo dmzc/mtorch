@@ -1,13 +1,13 @@
 import numpy as np
 
-from ._dataset import Dataset
+from ._dataset import MemoryDataset
 
 r"""
     螺旋数据集（三类）
 """
 
 
-class Sprial(Dataset):
+class Sprial(MemoryDataset):
 
     _data_size_per_category: int
 
@@ -15,7 +15,7 @@ class Sprial(Dataset):
         super().__init__()
         self._data_size_per_category = data_size_per_category
 
-    def load_data(self):
+    def fetch_data(self):
         data_size_per_category = self._data_size_per_category
         category_size = 3
         input_dim = 2

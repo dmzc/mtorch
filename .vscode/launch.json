@@ -43,6 +43,7 @@
                 // "./mtorch/tests/units/utils/test_util.py::test_dumps_stream",
                 // "./mtorch/tests/cases/test_mlp.py",
                 // "./mtorch/tests/smokes/test_package_import.py",
+                // "./mtorch/tests/units/utils/data/transforms/",
                 "-vv",
                 "-s",
                 "--rootdir=./mtorch/tests",

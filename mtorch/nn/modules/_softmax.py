@@ -1,4 +1,4 @@
-from mtorch.nn.modules.module import Module
+from mtorch.nn.modules._module import Module
 from mtorch._interfaces import ITensor
 import mtorch.core.operator as F
 

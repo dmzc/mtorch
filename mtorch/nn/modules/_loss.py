@@ -18,4 +18,4 @@ class CrossEntroyLoss(Module):
         self._axis = axis
 
     def forward(self, x: np.ndarray, t: np.ndarray):
-        return F.CrossEntropyLoss(x, t, axis=self._axis)
+        return F.crossEntropyLoss(x, t, axis=self._axis)

@@ -1,6 +1,6 @@
 from __future__ import annotations
 from pathlib import Path
-from mtorch.core.env import pkg_enabled
+from mtorch.core._env import pkg_enabled
 import numpy as np
 import os
 from typing import Iterable, BinaryIO
