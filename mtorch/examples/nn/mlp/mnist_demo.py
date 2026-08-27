@@ -2,6 +2,11 @@ r"""手写数字识别
 用mlp网络解决手写数字识别，数据集为mnist
 """
 
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent.parent))
+
 from pathlib import Path
 
 from mtorch.utils.data.dataloaders import DataLoader
@@ -9,23 +14,27 @@ from mtorch.utils.data.datasets import Mnist
 from mtorch.utils.data.transforms import Compose, Flatten, Normalize, ToFloat32
 from mtorch.optim import SGD
 from mtorch.nn.modules import Sequential, Relu, Linear, CrossEntroyLoss
+import time
+import tracemalloc
+from mtorch.utils import dumps
+from mtorch import CACHE_DIR
+from mtorch.utils.perf import CodeExecutionProfiler, MemoryUsageProfiler
+
 
 # 超参数
 batch_size = 100
 hidden_size = 1000
-max_epoch = 20
+max_epoch = 200
 lr = 0.2
 
 
 data_transform = Compose(Flatten(), Normalize(min=0, max=255), ToFloat32())
 
 train_dataset = Mnist(
-    root_dir=Path(__file__).parent / "tmp",
     dataset_type="train",
     data_transform=data_transform,
 )
 test_dataset = Mnist(
-    root_dir=Path(__file__).parent / "tmp",
     dataset_type="test",
     data_transform=data_transform,
 )
@@ -40,54 +49,62 @@ model = Sequential(
 )
 optimizer = SGD(params_obj=model, lr=lr)
 
-
 losser = CrossEntroyLoss(axis=1)
 flag = False
-for index in range(max_epoch):
 
-    import time
-    import tracemalloc
+perf_infos = {}
+tracemalloc.start()
 
-    tracemalloc.start()
-    # 迭代之前记录基准
-    current_prev, peak_prev = tracemalloc.get_traced_memory()
-    snapshot1 = tracemalloc.take_snapshot()
-    if flag:
-        break
-    t1 = time.perf_counter()
+o_count = 0
+o_logs = {}
+for idx in range(max_epoch):
+    loop_start_mm, _ = tracemalloc.get_traced_memory()
+    # loop_start_snapshot = tracemalloc.take_snapshot()
+    loop_start_time = time.perf_counter_ns()
+    count = 0
+    o_log = {}
+    o_logs[f"轮数{o_count}->{o_count+1}"] = o_log
+    o_count = o_count + 1
+
+    # with CodeExecutionProfiler(desc=f"{idx}轮训练耗时"):
     for item in train_loader:
-        t2 = time.perf_counter()
+        logs = []
+        with (
+            CodeExecutionProfiler(
+                desc="数据加载耗时", logs=logs, start_time=loop_start_time
+            ),
+            MemoryUsageProfiler(
+                desc="数据加载内存变化",
+                logs=logs,
+                start_current=loop_start_mm,
+                # snap_before=loop_start_snapshot,
+            ),
+        ):
+            pass
         data = item.data
         label = item.label
 
-        current_now, peak_now = tracemalloc.get_traced_memory()
-        snapshot2 = tracemalloc.take_snapshot()
-
-        delta = current_now - current_prev
-        print(f"Python堆新增 {delta / 1024:.2f} KB  peak {peak_now /1024:.2f} KB")
-
-        # 打印分配最多的5行
-        top_stats = snapshot2.compare_to(snapshot1, "lineno")
-        for stat in top_stats[:5]:
-            print(stat)
-
-        y_pred = model.forward(data)
-        t3 = time.perf_counter()
-        loss = losser.forward(x=y_pred, t=label)
-        t4 = time.perf_counter()
+        with (
+            CodeExecutionProfiler(desc="前向传播", logs=logs),
+            MemoryUsageProfiler(desc="前向传播", logs=logs),
+        ):
+            y_pred = model.forward(data)
+            loss = losser.forward(x=y_pred, t=label)
+        # with (
+        #     CodeExecutionProfiler(desc="反向传播", logs=logs),
+        #     MemoryUsageProfiler(desc="反向传播", logs=logs),
+        # ):
         model.clear_grads()
         loss.backward()
-        t5 = time.perf_counter()
-        optimizer.step()
-        t6 = time.perf_counter()
-        flag = True
-        break
-        # print(
-        #     f"load:{(t2-t1)*1000:6.2f} ms | "
-        #     f"forward:{(t3-t2)*1000:6.2f} ms | "
-        #     f"loss:{(t4-t3)*1000:6.2f} ms | "
-        #     f"backward:{(t5-t4)*1000:6.2f} ms | "
-        #     f"step:{(t6-t5)*1000:6.2f} ms | "
-        #     f"all:{(t6-t1)*1000:6.2f} ms"
-        # )
-    # print(f"第{index}轮损失{loss.data}")
+        with (
+            CodeExecutionProfiler(desc="梯度更新", logs=logs),
+            MemoryUsageProfiler(desc="梯度更新", logs=logs),
+        ):
+            optimizer.step()
+        loop_start_time = time.perf_counter_ns()
+        loop_start_mm, _ = tracemalloc.get_traced_memory()
+        # loop_start_snapshot = tracemalloc.take_snapshot()
+        o_log[f"{count}->{count+1}"] = logs
+        count += 1
+
+dumps(file=CACHE_DIR / f"stats/{time.asctime()}/perf_info", obj=o_logs)

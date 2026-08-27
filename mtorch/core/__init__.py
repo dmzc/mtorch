@@ -1,5 +1,10 @@
 from . import operator
-from ._env import ENABLE_BACKPROGATION, ROOT_DIR, pkg_enabled
+from ._env import pkg_enabled, CACHE_DIR
 from ._tensor import Tensor
 
-__all__ = ["ENABLE_BACKPROGATION", "ROOT_DIR", "Tensor", "operator", "pkg_enabled"]
+__all__ = [
+    "Tensor",
+    "operator",
+    "pkg_enabled",
+    "CACHE_DIR",
+]

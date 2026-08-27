@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from mtorch._interfaces import DatasetData, Dataset_Type, ITransform
+from mtorch import DatasetData, Dataset_Type, ITransform, CACHE_DIR
 from ._dataset import AbstractDataset
 from ._idx import IDXDataset
 from typing import Optional
@@ -20,15 +20,18 @@ class Mnist(AbstractDataset):
 
     def __init__(
         self,
-        root_dir: str | Path,
         dataset_type: Dataset_Type,
+        root_dir: str | Path = None,
         data_transform: ITransform = None,
         label_transform: ITransform = None,
     ):
         super().__init__(data_transform=data_transform, label_transform=label_transform)
-        root_dir = Path(root_dir)
-        if root_dir.exists() and not root_dir.is_dir():
-            raise NotADirectoryError("root must point to an existing directory.")
+        if root_dir is not None:
+            root_dir = Path(root_dir)
+            if root_dir.exists() and not root_dir.is_dir():
+                raise NotADirectoryError("root must point to an existing directory.")
+        else:
+            root_dir = CACHE_DIR / "MNIST"
         self._root_dir = root_dir
         self._dataset_type = dataset_type
         self._ensured = False
@@ -70,18 +73,39 @@ class Mnist(AbstractDataset):
                 root_dir.mkdir(parents=True, exist_ok=True)
 
         if not data_file.exists():
-
             _ensure_root_dir()
-            import urllib
-
-            urllib.request.urlretrieve(f"{url_base}{data_name}", str(data_file))
+            self._download_file(f"{url_base}{data_name}", str(data_file))
         if not label_file.exists():
             _ensure_root_dir()
-            import urllib
-
-            urllib.request.urlretrieve(f"{url_base}{label_name}", str(label_file))
+            self._download_file(f"{url_base}{label_name}", str(label_file))
 
         self._data_idx_dataset = IDXDataset(
             file=data_file, work_dir=root_dir, all_data=True
         )
         self._label_idx_dataset = IDXDataset(file=label_file, work_dir=root_dir)
+
+    def _download_file(self, url: str, file: str):
+        def _download_progress(block_num, block_size, total_size):
+            import sys
+
+            downloaded = block_num * block_size
+            if total_size <= 0:
+                # 服务器没返回总大小，只打印已下载字节
+                sys.stdout.write(
+                    f"\rDownloading: {downloaded / 1024:.1f} KB (unknown total)"
+                )
+            else:
+                percent = min(100.0, downloaded * 100.0 / total_size)
+                bar_len = 40
+                filled = int(bar_len * percent / 100)
+                bar = "█" * filled + "-" * (bar_len - filled)
+                sys.stdout.write(
+                    f"\r[{bar}] {percent:5.1f}%  {downloaded/1024:.1f}/{total_size/1024:.1f} KB"
+                )
+            sys.stdout.flush()
+
+        import urllib
+
+        print(f"Start download {url}")
+        urllib.request.urlretrieve(url, file, _download_progress)
+        print(f"Successfuly download {url}")

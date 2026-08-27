@@ -7,7 +7,7 @@ from mtorch._interfaces import (
     ITensor,
     ITransform,
 )
-from mtorch.core import ENABLE_BACKPROGATION, ROOT_DIR, Tensor, operator, pkg_enabled
+from mtorch.core import CACHE_DIR, Tensor, operator, pkg_enabled
 
 __version__ = "0.0.13"
 
@@ -33,8 +33,7 @@ def _setup():
 
 _setup()
 __all__ = [
-    "ENABLE_BACKPROGATION",
-    "ROOT_DIR",
+    "CACHE_DIR",
     "DatasetData",
     "IDataLoader",
     "IDataset",

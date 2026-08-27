@@ -1,8 +1,10 @@
 from __future__ import annotations
 import numpy as np
-from mtorch.core._env import ENABLE_BACKPROGATION
+
 from mtorch._interfaces import ITensor, IOperator
 from mtorch.autograd import backward
+
+ENABLE_BACKPROGATION = True  # TODO:去掉
 
 
 class Tensor(ITensor):
