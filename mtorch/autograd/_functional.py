@@ -22,7 +22,11 @@ def backward(tensor: ITensor) -> None:
     while creators:
         creator = creators.pop()
         gys = [output().grad for output in creator.outputs]
+        from mtorch.utils.perf import CodeExecutionProfiler
+
+        # with CodeExecutionProfiler(desc=f"{str(creator)}反向传播"):
         gxs = creator.backward(*gys)
+
         if not isinstance(gxs, tuple):
             gxs = (gxs,)
         for x, gx in zip(creator.inputs, gxs):

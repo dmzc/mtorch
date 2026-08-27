@@ -50,6 +50,7 @@ class AbstractDataset(IDataset):
             return data
         else:
             return data
+        # return data
 
     def __len__(self):
         return self.len()

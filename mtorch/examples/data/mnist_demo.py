@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.image import AxesImage
 
-from mtorch import ROOT_DIR
+from mtorch import CACHE_DIR
 from mtorch.examples.data._util import create_subplot
 from mtorch.utils.data.datasets import Mnist
 
@@ -14,7 +14,7 @@ plt.rcParams["font.sans-serif"] = ["SimHei"]  # 用黑体显示中文
 plt.rcParams["axes.unicode_minus"] = False  # 正常显示负号
 
 
-dataset = Mnist(root_dir=ROOT_DIR / "utils/data/resources/MNIST", dataset_type="train")
+dataset = Mnist(root_dir=CACHE_DIR / "MNIST", dataset_type="train")
 index = -1
 count = len(dataset)
 axes_image: AxesImage = None

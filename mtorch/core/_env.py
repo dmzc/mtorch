@@ -1,4 +1,5 @@
 import pathlib
+import os
 
 
 def pkg_enabled(pkg_name: str, pkg_version: str = None) -> bool:
@@ -21,8 +22,4 @@ def pkg_enabled(pkg_name: str, pkg_version: str = None) -> bool:
     return version(pkg_name) == pkg_version
 
 
-# 是否启用反向传播
-ENABLE_BACKPROGATION = True  # TODO:不用这个，应该是自动判断的
-
-
-ROOT_DIR = pathlib.Path(__file__).parent.parent
+CACHE_DIR = pathlib.Path.home() / ".mtorch"

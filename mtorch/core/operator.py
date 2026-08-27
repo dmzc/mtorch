@@ -3,9 +3,10 @@ from abc import abstractmethod
 import math
 import numpy as np
 import weakref
-from mtorch.core._env import ENABLE_BACKPROGATION
 from mtorch._interfaces import ITensor, IOperator, Slice_Type
 from mtorch.core._tensor import Tensor
+
+ENABLE_BACKPROGATION = True  # TODO:去掉
 
 
 # ==========================================================================
@@ -39,6 +40,9 @@ class Operator(IOperator):
             self.outputs = [weakref.ref(output) for output in outputs]
             self.inputs = inputs
         return outputs if len(outputs) > 1 else outputs[0]
+
+    def __repr__(self):
+        return self.__class__.__name__
 
     def forward(self, *xs: any) -> any:
         raise NotImplementedError
@@ -637,7 +641,37 @@ class Matmul(Operator):
 
     def backward(self, dout: ITensor) -> ITensor:
         x, w = self.inputs
-        return matmul(dout, w.data.T), matmul(x.data.T, dout)
+        from mtorch.utils.perf import CodeExecutionProfiler
+
+        with CodeExecutionProfiler(desc="matmual-backward-a1"):
+
+            a1 = matmul(dout, w.data.T)
+        with CodeExecutionProfiler(desc="matmual-backward-a1"):
+            a2 = matmul(x.data.T, dout)
+
+        # 仅预处理，不修改matmul入参接口
+        # dout_cont = np.ascontiguousarray(dout.data)
+
+        # with CodeExecutionProfiler(desc="matmul-backward-a1"):
+        #     a1 = matmul(dout_cont, w.data.T)
+
+        # with CodeExecutionProfiler(desc="matmul-backward-a2"):
+        #     a2 = matmul(x.data.T, dout_cont)
+
+        # from scipy.linalg.blas import dgemm
+
+        # # a1 = dout @ w.T
+        # a1 = dgemm(alpha=1.0, a=dout.data, b=w.data, trans_b=True)
+        # # a2 = x.T @ dout
+        # a2 = dgemm(alpha=1.0, a=x.data, b=dout.data, trans_a=True)
+
+        # with CodeExecutionProfiler(desc="matmual-backward-a1"):
+        #     a1 = matmul(w.data, dout.data.T).data.T
+
+        # with CodeExecutionProfiler(desc="matmual-backward-a2"):
+        #     a2 = matmul(x.data, dout).data.T
+
+        return Tensor(a1), Tensor(a2)
 
 
 def matmul(x: np.ndarray, w: np.ndarray) -> ITensor:
