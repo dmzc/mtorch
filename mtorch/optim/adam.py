@@ -25,7 +25,7 @@ class Adam(IOptimizer):
 
     def step(self):
         self.t += 1
-        for param in self._params_obj.params():
+        for param in self._params_obj.parameters():
             key = id(param)
             if key not in self.ms:
                 self.ms[key] = np.zeros_like(param.data)

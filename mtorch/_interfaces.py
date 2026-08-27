@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import weakref
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Iterable
+from collections.abc import Iterable
+from typing import Protocol
 from dataclasses import dataclass
-from typing import Literal, TypeAlias, Any
+from typing import Literal, TypeAlias, Any, Optional
 import numpy as np  # TODO:删除，上层用DataArray
 
-DataArray: TypeAlias = np.ndarray
+DataArray: TypeAlias = np.ndarray[Any, Any]
 
 
 class ITensor(ABC):
@@ -16,10 +17,10 @@ class ITensor(ABC):
     """
 
     data: DataArray
-    creator: IOperator
+    creator: Optional[IOperator]
     generation: int
     require_grad: bool
-    grad: DataArray
+    grad: Optional[DataArray]
 
     @property
     def id(self) -> str: ...
@@ -47,7 +48,7 @@ class ITensor(ABC):
     def backward(self) -> None: ...
 
 
-class IOperator(Callable):
+class IOperator(Protocol):
     """
     算子
     """
@@ -57,7 +58,7 @@ class IOperator(Callable):
     label: str
     generation: int  # TODO:deperated
 
-    def backward(self, dout: ITensor) -> ITensor: ...
+    def backward(self, dout: DataArray) -> DataArray: ...
 
     @property
     def id(self) -> str: ...
@@ -67,16 +68,14 @@ class IOperator(Callable):
 
 
 class IModule(ABC):
-
     @abstractmethod
     def forward(self, x: Any) -> Any: ...
 
     @abstractmethod
-    def params(self) -> Iterable[ITensor]: ...
+    def parameters(self) -> Iterable[ITensor]: ...
 
 
 class IOptimizer(ABC):
-
     _params_obj: IModule
 
     def __init__(self, params_obj: IModule):
@@ -95,11 +94,10 @@ Dataset_Type: TypeAlias = Literal["train", "test", "val"]
 @dataclass
 class DatasetData:
     data: DataArray
-    label: DataArray = None
+    label: DataArray | None = None
 
 
 class IDataset(ABC):
-
     def __len__(self) -> int:
         """
         返回数据量
@@ -127,7 +125,7 @@ class IDataLoader(ABC):
 
     _dataset: IDataset
 
-    def __iter__(self):
+    def __iter__(self) -> Any:
         """
         返回迭代器对象，和__next__配合使用
         """
@@ -163,7 +161,7 @@ class ITrainer(ABC):
         pass
 
 
-class ITransform(Callable[[Any], Any]):
+class ITransform(Protocol):
     r"""
     数据变换接口。
 
@@ -176,6 +174,8 @@ class ITransform(Callable[[Any], Any]):
         - __call__ 接收单样本数组，返回处理完成的样本数组
     """
 
-    def __repr__(self): ...
+    # def __repr__(self): ...
 
-    def __call__(self, *args, **kwds): ...
+    def __repr__(self) -> str: ...
+
+    def __call__(self, *args: Any, **kwds: Any): ...

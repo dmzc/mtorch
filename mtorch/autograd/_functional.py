@@ -1,17 +1,19 @@
-from mtorch._interfaces import ITensor, IOperator
+from mtorch._interfaces import ITensor, IOperator, DataArray
+from typing import Any
 
 
 def backward(tensor: ITensor) -> None:
     if tensor.creator is None:
         return
 
+    # TODO:梯度不允许被修改，不用init，应该是只读静态变量
     if tensor.grad is None:
         tensor.init_grad()
 
     creators: list[IOperator] = []
-    seen_set: set = set()
+    seen_set: set[IOperator] = set()
 
-    def add_creator(creator):
+    def add_creator(creator: IOperator):
         if creator not in seen_set:
             seen_set.add(creator)
             creators.append(creator)
@@ -21,7 +23,7 @@ def backward(tensor: ITensor) -> None:
 
     while creators:
         creator = creators.pop()
-        gys = [output().grad for output in creator.outputs]
+        gys: list[DataArray] = [output().grad for output in creator.outputs]
         gxs = creator.backward(*gys)
         if not isinstance(gxs, tuple):
             gxs = (gxs,)
@@ -35,5 +37,7 @@ def backward(tensor: ITensor) -> None:
 
 
 # TODO 多种微分、数据微分
-def jacobian(func, inputs, create_graph=False, numercial=False):
+def jacobian(
+    func: Any, inputs: Any, create_graph: bool = False, numercial: bool = False
+):
     pass

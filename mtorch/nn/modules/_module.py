@@ -18,7 +18,7 @@ class Module(IModule):
             self.__subs.add(name)
         super().__setattr__(name, value)
 
-    def params(self) -> Iterable[ITensor]:
+    def parameters(self) -> Iterable[ITensor]:
         subs = self.__subs
         if subs is None:
             return
@@ -28,8 +28,8 @@ class Module(IModule):
                 yield obj
             else:
                 m: IModule = obj
-                yield from m.params()
+                yield from m.parameters()
 
     def clear_grads(self):
-        for param in self.params():
+        for param in self.parameters():
             param.clear_grad()

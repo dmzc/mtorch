@@ -27,6 +27,13 @@ from typing import Any
 
 ENABLE_BACKPROGATION = True
 
+"""
+TODO:
+    1. 前向传播x，反向传播上游不允许被修改的
+    2. 需要更新参数的一定是叶子节点
+    3. 前向时就能明确一个变量是否计算梯度
+"""
+
 
 # ==========================================================================
 # 算子基类
@@ -230,19 +237,19 @@ class Pow(Operator):
     乘幂
     """
 
-    def __init__(self, c: int):
-        self.c = c
+    _exponent: int
+
+    def __init__(self, exponent: int):
+        self._exponent = exponent
 
     def forward(self, x: DataArray) -> DataArray:
-        y = x**self.c
+        y = x**self._exponent
         return y
 
     def backward(self, dout: DataArray) -> DataArray:
         x = self.inputs[0].data
-        c = self.c
-
-        gx = c * x ** (c - 1) * dout
-        return gx
+        exponent = self._exponent
+        return exponent * x ** (exponent - 1) * dout
 
 
 def pow(x: Any, c: int):
@@ -335,8 +342,7 @@ class Log(Operator):
 
     def backward(self, dout: DataArray) -> DataArray:
         x = self.inputs[0].data
-        gx = dout / x
-        return gx
+        return dout / x
 
 
 def log(x):
@@ -638,7 +644,7 @@ class CrossEntropyLoss(Operator):
         # TODO:这里还需要改善，目前只支持二维数组
         x, t = self.inputs
         N, CLS_NUM = x.shape
-        dout *= 1 / N
+        dout = dout / N
         y = _softmax(x.data, axis=self._axis)
         # convert to one-hot
         t_onehot = _eye(CLS_NUM, dtype=t.dtype)[t.data]
