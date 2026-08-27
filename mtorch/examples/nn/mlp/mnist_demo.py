@@ -24,7 +24,7 @@ from mtorch.utils.perf import CodeExecutionProfiler, MemoryUsageProfiler
 # 超参数
 batch_size = 100
 hidden_size = 1000
-max_epoch = 200
+max_epoch = 2
 lr = 0.2
 
 
@@ -66,45 +66,48 @@ for idx in range(max_epoch):
     o_logs[f"轮数{o_count}->{o_count+1}"] = o_log
     o_count = o_count + 1
 
-    # with CodeExecutionProfiler(desc=f"{idx}轮训练耗时"):
-    for item in train_loader:
-        logs = []
-        with (
-            CodeExecutionProfiler(
-                desc="数据加载耗时", logs=logs, start_time=loop_start_time
-            ),
-            MemoryUsageProfiler(
-                desc="数据加载内存变化",
-                logs=logs,
-                start_current=loop_start_mm,
-                # snap_before=loop_start_snapshot,
-            ),
-        ):
-            pass
-        data = item.data
-        label = item.label
+    with CodeExecutionProfiler(desc=f"{idx}轮训练耗时"):
+        for item in train_loader:
+            logs = []
+            with (
+                CodeExecutionProfiler(
+                    desc="数据加载耗时", logs=logs, start_time=loop_start_time
+                ),
+                MemoryUsageProfiler(
+                    desc="数据加载内存变化",
+                    logs=logs,
+                    start_current=loop_start_mm,
+                    # snap_before=loop_start_snapshot,
+                ),
+            ):
+                pass
+            data = item.data
+            label = item.label
 
-        with (
-            CodeExecutionProfiler(desc="前向传播", logs=logs),
-            MemoryUsageProfiler(desc="前向传播", logs=logs),
-        ):
-            y_pred = model.forward(data)
-            loss = losser.forward(x=y_pred, t=label)
-        # with (
-        #     CodeExecutionProfiler(desc="反向传播", logs=logs),
-        #     MemoryUsageProfiler(desc="反向传播", logs=logs),
-        # ):
-        model.clear_grads()
-        loss.backward()
-        with (
-            CodeExecutionProfiler(desc="梯度更新", logs=logs),
-            MemoryUsageProfiler(desc="梯度更新", logs=logs),
-        ):
-            optimizer.step()
-        loop_start_time = time.perf_counter_ns()
-        loop_start_mm, _ = tracemalloc.get_traced_memory()
-        # loop_start_snapshot = tracemalloc.take_snapshot()
-        o_log[f"{count}->{count+1}"] = logs
-        count += 1
+            with (
+                CodeExecutionProfiler(desc="前向传播", logs=logs),
+                MemoryUsageProfiler(desc="前向传播", logs=logs),
+            ):
+                y_pred = model.forward(data)
+                loss = losser.forward(x=y_pred, t=label)
+            with (
+                CodeExecutionProfiler(desc="反向传播", logs=logs),
+                MemoryUsageProfiler(desc="反向传播", logs=logs),
+            ):
+                model.clear_grads()
+                loss.backward()
+            with (
+                CodeExecutionProfiler(desc="梯度更新", logs=logs),
+                MemoryUsageProfiler(desc="梯度更新", logs=logs),
+            ):
+                optimizer.step()
+            loop_start_time = time.perf_counter_ns()
+            loop_start_mm, _ = tracemalloc.get_traced_memory()
+            # loop_start_snapshot = tracemalloc.take_snapshot()
+            o_log[f"{count}->{count+1}"] = logs
+            count += 1
 
-dumps(file=CACHE_DIR / f"stats/{time.asctime()}/perf_info", obj=o_logs)
+
+asctime = time.asctime()
+asctime = asctime.replace(" ", "_").replace(":", "-")
+dumps(file=CACHE_DIR / f"stats/{asctime}/perf_info", obj=o_logs)

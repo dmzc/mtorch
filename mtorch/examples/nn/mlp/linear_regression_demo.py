@@ -43,13 +43,13 @@ for index in range(epoch):
         print(f"第{index}轮损失{loss.data}")
 
 # 训练数据：展示为散点
-figure, axes = plt.subplots()
-axes.scatter(x, y, s=10)
-axes.set_xlabel("x")
-axes.set_ylabel("y")
+figure, axis = plt.subplots()
+axis.scatter(x, y, s=10)
+axis.set_xlabel("x")
+axis.set_ylabel("y")
 
 # 预测值：展示为函数图像，函数图像为线条，所以x值连续密集，不能随机
 t = np.arange(0, 1, 0.001)[:, np.newaxis]
 y_pred: ITensor = model.forward(t)
-axes.plot(t, y_pred.data, color="r")
+axis.plot(t, y_pred.data, color="r")
 plt.show()

@@ -1,4 +1,4 @@
-from typing import overload, OrderedDict
+from typing import overload, OrderedDict,Any
 
 from mtorch.nn.modules._module import Module
 import torch
@@ -32,7 +32,7 @@ class Sequential(Module):
             for index, sub in enumerate(args):
                 setattr(self, f"{index}", sub)
 
-    def forward(self, x: any) -> any:
+    def forward(self, x: Any) -> Any:
         for sub in self.subs:
             x = sub.forward(x)
         return x

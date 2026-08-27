@@ -31,7 +31,7 @@ def render(x: ITensor | list[ITensor], path: Path = None):
         if is_IVariable:
             if id not in IVariables:
                 IVariables.add(id)
-                IVariable: IVariable = node
+                IVariable: ITensor = node
                 fill_color = "white"
                 if IVariable.is_input:
                     fill_color = "green"

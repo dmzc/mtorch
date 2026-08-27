@@ -3,6 +3,7 @@ from mtorch.tests._utils import TEST_DIRS, mock_missing_package
 import numpy as np
 from pathlib import Path
 from collections.abc import Callable
+from typing import Any
 
 current_filename = Path(__file__).stem
 
@@ -11,7 +12,7 @@ def _clean(path: Path):
 
     if not path.is_dir() or not path.exists():
         return
-    if not str(TEST_DIRS) in str(path):
+    if str(TEST_DIRS) not in str(path):
         return
     if any(path.iterdir()):
         import shutil
@@ -45,7 +46,7 @@ class _MockDumpDataIterator:
     _max_iteration: int
     _current_iteration: int
     _per_count: int
-    _func: Callable[[int, int, int], any]
+    _func: Callable[[int, int, int], Any]
 
     _initialized: bool
 
@@ -53,7 +54,7 @@ class _MockDumpDataIterator:
         self,
         max_iteration: int = 10,
         per_count: int = 1,
-        func: Callable[[int, int, int], any] = _default_func,
+        func: Callable[[int, int, int], Any] = _default_func,
     ):
         self._max_iteration = max_iteration
         self._per_count = per_count
@@ -65,7 +66,7 @@ class _MockDumpDataIterator:
         return self
 
     def __next__(self):
-        if self._initialized == False:
+        if not self._initialized:
             self._initialized = True
         if self._current_iteration == self._max_iteration:
             self._initialized = False

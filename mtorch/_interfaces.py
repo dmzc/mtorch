@@ -5,7 +5,9 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from typing import Literal, TypeAlias, Any
-import numpy as np
+import numpy as np  # TODO:删除，上层用DataArray
+
+DataArray: TypeAlias = np.ndarray
 
 
 class ITensor(ABC):
@@ -13,11 +15,11 @@ class ITensor(ABC):
     张量
     """
 
-    data: np.ndarray
+    data: DataArray
     creator: IOperator
     generation: int
     require_grad: bool
-    grad: ITensor
+    grad: DataArray
 
     @property
     def id(self) -> str: ...
@@ -92,8 +94,8 @@ Dataset_Type: TypeAlias = Literal["train", "test", "val"]
 
 @dataclass
 class DatasetData:
-    data: np.ndarray
-    label: np.ndarray = None
+    data: DataArray
+    label: DataArray = None
 
 
 class IDataset(ABC):
@@ -133,7 +135,7 @@ class IDataLoader(ABC):
             "Subclasses of IDataLoader should implement __iter__."
         )
 
-    def __next__(self) -> tuple[np.ndarray] | np.ndarray:
+    def __next__(self) -> tuple[DataArray] | DataArray:
         """
         迭代器对象返回下一条或下一批数据
         """

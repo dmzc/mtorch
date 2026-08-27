@@ -83,11 +83,15 @@ class MemoryDataset(AbstractDataset):
         self,
         data_transform=None,
         label_transform=None,
-        data: np.ndarray = None,
-        label: np.ndarray = None,
+        data: np.ndarray | list = None,
+        label: np.ndarray | list = None,
     ):
         super().__init__(data_transform, label_transform)
         if data is not None:
+            if isinstance(data, list):
+                data = np.array(data)
+            if label is not None and isinstance(label, list):
+                label = np.array(label)
             self._inited = True
             self._data = data
             self._label = label

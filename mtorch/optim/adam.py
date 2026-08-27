@@ -32,7 +32,7 @@ class Adam(IOptimizer):
                 self.vs[key] = np.zeros_like(param.data)
             m, v = self.ms[key], self.vs[key]
             beta1, beta2, eps = self.beta1, self.beta2, self.eps
-            grad = param.grad.data
+            grad = param.grad
 
             m += (1 - beta1) * (grad - m)
             v += (1 - beta2) * (grad * grad - v)

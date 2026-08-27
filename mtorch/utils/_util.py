@@ -2,11 +2,10 @@ from __future__ import annotations
 from pathlib import Path
 from mtorch.core._env import pkg_enabled
 import numpy as np
-import os
-from typing import Iterable, BinaryIO
+from typing import Iterable, BinaryIO, Any
 
 
-def _dump_item(obj: any, orjson_enabled: bool = True) -> bytes:
+def _dump_item(obj: Any, orjson_enabled: bool = True) -> bytes:
     def _json_default_handler(obj):
 
         if isinstance(obj, np.ndarray):
@@ -215,7 +214,7 @@ def dumps(
     return file
 
 
-def loads(file: str | Path) -> any:
+def loads(file: str | Path) -> Any:
     r"""
     TODO：支持流式读大文件内容
     """
@@ -238,7 +237,7 @@ def loads(file: str | Path) -> any:
 
         if head.startswith(b"\x28\xb5\x2f\xfd"):
             if not pkg_enabled("zstandard"):
-                raise ValueError(f"Zstabdard Required!")
+                raise ValueError("Zstabdard Required!")
             import zstandard
 
             dctx = zstandard.ZstdDecompressor()

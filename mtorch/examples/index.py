@@ -15,7 +15,7 @@ def get_script_doc(path: Path) -> str:
         tree = ast.parse(src)
         doc = ast.get_docstring(tree)
         if doc:
-            lines = [l.strip() for l in doc.splitlines() if l.strip()]
+            lines = [line.strip() for line in doc.splitlines() if line.strip()]
             return lines[0] if lines else "(无说明)"
         return "(无说明)"
     except Exception:
@@ -150,10 +150,12 @@ class DemoLauncher:
             # import threading
 
             # threading.Thread(
-            #     target=_read_pipe, args=(proc.stdout, self.on_stdout_line), daemon=True
+            #     target=_read_pipe, args=(proc.stdout, self.on_stdout_line), 
+            # daemon=True
             # ).start()
             # threading.Thread(
-            #     target=_read_pipe, args=(proc.stderr, self.on_stderr_line), daemon=True
+            #     target=_read_pipe, args=(proc.stderr, self.on_stderr_line),
+            # daemon=True
             # ).start()
         except Exception as e:
             self.status_var.set(f"启动失败: {e}")

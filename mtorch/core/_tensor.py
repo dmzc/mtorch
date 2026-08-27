@@ -1,8 +1,9 @@
 from __future__ import annotations
-import numpy as np
 
 from mtorch._interfaces import ITensor, IOperator
+from ._core import _data_array, _isscalar, _ones_like
 from mtorch.autograd import backward
+from typing import Any
 
 ENABLE_BACKPROGATION = True  # TODO:去掉
 
@@ -12,19 +13,20 @@ class Tensor(ITensor):
 
     # TODO：修改为__array_func__
 
-    # 貌似不需要这个，numpy内部实现__add__、__radd__方法应该做了类型判断，遇到不识别的类型，会自动转交。
+    # 貌似不需要这个，numpy内部实现__add__、__radd__方法应该做了类型判断，
+    # 遇到不识别的类型，会自动转交。
 
     __array_priority__ = 200
 
     def __init__(
         self,
-        data: any,  # 数值、np.ndarray，不能是Variable实例
+        data: Any,  # 数值、列表、元组、DataArray，不能是Tensor实例
         creator: IOperator = None,
         name: str = None,
         require_grad: bool = False,
     ):
-        if np.isscalar(data) or isinstance(data, list) or isinstance(data, tuple):
-            data = np.array(data)
+        if _isscalar(data) or isinstance(data, list) or isinstance(data, tuple):
+            data = _data_array(data)
         self.data = data
         self.grad = None
         self.__name = name
@@ -83,7 +85,7 @@ class Tensor(ITensor):
         return self.data.dtype
 
     def init_grad(self):
-        self.grad = Tensor(data=np.ones_like(self))
+        self.grad = _ones_like(self.data)
 
     def __len__(self):
         return len(self.data)

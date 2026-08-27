@@ -1,11 +1,11 @@
-from mtorch.tests._utils import MockDataset
 from mtorch._interfaces import DatasetData
 from mtorch.utils.data.dataloaders import DataLoader
+from mtorch.utils.data.datasets import MemoryDataset
 import numpy as np
 
 
 def test_dataLoader():
-    dataset = MockDataset(
+    dataset = MemoryDataset(
         data=[
             [1, 2],
             [3, 4],

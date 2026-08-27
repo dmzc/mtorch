@@ -9,7 +9,7 @@ from mtorch.examples.data._util import create_subplot
 from mtorch.utils.data.datasets import UnivariateFunctionDataset
 
 plt.rcParams["font.sans-serif"] = ["SimHei"]  # 用黑体显示中文
-plt.rcParams["axes.unicode_minus"] = False  # 正常显示负号
+plt.rcParams["axis.unicode_minus"] = False  # 正常显示负号
 
 
 def sin(x: np.ndarray) -> np.ndarray:
@@ -20,7 +20,7 @@ dataset = UnivariateFunctionDataset(
     func=sin, x_data=np.arange(0, 1, 0.01)[:, np.newaxis]
 )
 result = dataset[0 : len(dataset)]
-axes = create_subplot()
-axes.scatter(result.data, result.label)
+axis = create_subplot()
+axis.scatter(result.data, result.label)
 plt.tight_layout()
 plt.show()

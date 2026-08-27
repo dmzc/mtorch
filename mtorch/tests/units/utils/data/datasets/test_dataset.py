@@ -1,10 +1,11 @@
 from mtorch._interfaces import DatasetData
-from mtorch.tests._utils import MockDataset
+from mtorch.utils.data.datasets import MemoryDataset
 
 
 def test_dataset():
 
-    dataset = MockDataset(data=[[1, 2], [3, 4], [5, 6]], label=[1, 2, 3])
+    dataset = MemoryDataset(data=[[1, 2], [3, 4], [5, 6]], label=[1, 2, 3])
+
     assert len(dataset) == 3, "数据集长度正常获取"
     data: DatasetData = dataset[0:1]
     assert data.data.tolist() == [[1, 2]] and data.label.tolist() == [

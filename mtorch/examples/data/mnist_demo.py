@@ -11,19 +11,19 @@ from mtorch.examples.data._util import create_subplot
 from mtorch.utils.data.datasets import Mnist
 
 plt.rcParams["font.sans-serif"] = ["SimHei"]  # 用黑体显示中文
-plt.rcParams["axes.unicode_minus"] = False  # 正常显示负号
+plt.rcParams["axis.unicode_minus"] = False  # 正常显示负号
 
 
 dataset = Mnist(root_dir=CACHE_DIR / "MNIST", dataset_type="train")
 index = -1
 count = len(dataset)
-axes_image: AxesImage = None
+axis_image: AxesImage = None
 
 
 def _draw_image(
     is_next=True,
 ) -> tuple[np.ndarray, int] | None:
-    global index, axes_image
+    global index, axis_image
     t_idx = None
     if is_next:
         t_idx = index + 1
@@ -35,10 +35,10 @@ def _draw_image(
     result = dataset[t_idx]
     data = result.data[0]
     label = result.label[0]
-    if axes_image is None:
-        axes_image = ax.imshow(data, cmap="gray", interpolation="nearest")
+    if axis_image is None:
+        axis_image = ax.imshow(data, cmap="gray", interpolation="nearest")
     else:
-        axes_image.set_data(data)
+        axis_image.set_data(data)
     ax.set_title(f"[{t_idx+1}/{count}] label = {label}")
     fig.canvas.draw_idle()
 

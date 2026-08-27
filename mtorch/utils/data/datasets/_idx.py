@@ -9,6 +9,7 @@ from pathlib import Path
 import numpy as np
 
 from mtorch import IDataset, CACHE_DIR
+from typing import Any
 
 
 class IDX:
@@ -185,7 +186,7 @@ class IDX:
         self._init_header()
         return self._image_count
 
-    def _get_dtype(self, type_code: int) -> tuple[int, any]:
+    def _get_dtype(self, type_code: int) -> tuple[int, Any]:
 
         dtypes = {
             0x08: np.uint8,  # unsigned byte

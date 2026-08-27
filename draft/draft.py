@@ -12,7 +12,7 @@ class Object:
     def __init__(self, data: np.ndarray):
         self._data = data
 
-    def __getitem__(self, slices: tuple[int | any]):
+    def __getitem__(self, slices: tuple[int | Any]):
         print(f"{slices}")
         return self._data[slices]
 

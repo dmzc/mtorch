@@ -1,5 +1,4 @@
 import pathlib
-import os
 
 
 def pkg_enabled(pkg_name: str, pkg_version: str = None) -> bool:

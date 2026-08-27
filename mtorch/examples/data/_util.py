@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from matplotlib.axes import Axes
+from matplotlib.axis import Axes
 
 
 def create_subplot(
@@ -9,8 +9,8 @@ def create_subplot(
 ) -> Axes:
     if title is None:
         title = " "
-    figure, axes = plt.subplots(figsize=figsize)
+    figure, axis = plt.subplots(figsize=figsize)
     figure.canvas.manager.set_window_title(title)
     if not show_toolbar:
         figure.canvas.manager.toolbar.setVisible(False)  # 去掉toolbar显示
-    return axes
+    return axis

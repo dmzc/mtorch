@@ -15,4 +15,4 @@ class SGD(IOptimizer):
     def step(self):
         lr = self.__lr
         for param in self._params_obj.params():
-            param.data -= lr * param.grad.data
+            param.data -= lr * param.grad
