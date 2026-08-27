@@ -3,9 +3,10 @@ from abc import abstractmethod
 import math
 import numpy as np
 import weakref
-from mtorch.core._env import ENABLE_BACKPROGATION
 from mtorch._interfaces import ITensor, IOperator, Slice_Type
 from mtorch.core._tensor import Tensor
+
+ENABLE_BACKPROGATION = True
 
 
 # ==========================================================================

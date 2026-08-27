@@ -8,7 +8,7 @@ from pathlib import Path
 
 import numpy as np
 
-from mtorch._interfaces import IDataset
+from mtorch import IDataset, CACHE_DIR
 
 
 class IDX:
@@ -280,7 +280,7 @@ class IDXDataset(IDataset):
     Args:
         file: idx格式文件路径，支持gzip压缩格式与未压缩原始idx文件。
         work_dir: 工作目录；若输入为gzip压缩文件，会将文件解压至此目录；
-                  为None时默认使用file所在目录作为工作目录。
+                  为None时默认使用CACHE_DIR。
 
     Raises:
         ValueError: 文件不存在、文件格式不对、工作目录不可用。
@@ -302,6 +302,7 @@ class IDXDataset(IDataset):
             raise ValueError("File must be a idx format!")
         self._file = file
         self._work_dir = work_dir
+
         self._idx = None
         # TODO：BufferReader本来就不是为了用来做随机seek的，增量seek读文件，坑比较，先全量
         # TODO: 复现，连续读11张，然后在反过来读就不行了
@@ -330,7 +331,10 @@ class IDXDataset(IDataset):
         self._idx = IDX(fd=fd, all_data=self._all_data)
 
     def _decompress(self, fd: BufferedReader) -> Path:
-        dst_file = self._work_dir / "~tmp"
+        work_dir = self._work_dir
+        if work_dir is None:
+            work_dir = CACHE_DIR
+        dst_file = work_dir / "~tmp"
         with (
             open(dst_file, "wb") as dst_fd,
             gzip.GzipFile(fileobj=fd, mode="rb") as src_fd,
