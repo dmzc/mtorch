@@ -8,7 +8,8 @@ from pathlib import Path
 
 import numpy as np
 
-from mtorch import IDataset, CACHE_DIR
+from mtorch import CACHE_DIR, ITransform
+from mtorch.utils.data.datasets import AbstractDataset
 from typing import Any
 
 
@@ -49,7 +50,11 @@ class IDX:
 
     _the_all_data: np.ndarray
 
-    def __init__(self, fd: BufferedReader, all_data: bool = False):
+    _transform: ITransform
+
+    def __init__(
+        self, fd: BufferedReader, all_data: bool = False, transform: ITransform = None
+    ):
         self._fd = fd
         self._initialized = False
         self._offset = None
@@ -59,6 +64,7 @@ class IDX:
         self._image_size = None
         self._all_data = all_data
         self._the_all_data = None
+        self._transform = transform
 
     def read(self, index: int | list[int] | None = None) -> np.ndarray:
         r"""
@@ -89,9 +95,15 @@ class IDX:
                 np_arr = np.frombuffer(full_bytes, dtype=dtype)
                 if sys.byteorder == "little" and dtype_size > 8:  # 是否小端序且单字节
                     np_arr = np_arr.byteswap()
-                self._the_all_data = np_arr.reshape(
-                    (self._image_count, *self._image_shape)
-                )
+                # 比较挫，要优化下
+                if len(self._image_shape) == 0:
+                    self._the_all_data = np_arr.reshape(
+                        (self._image_count, *self._image_shape)
+                    )
+                else:
+                    self._the_all_data = np_arr.reshape(
+                        (self._image_count, self._image_size)
+                    )
 
             if indices is None:
                 return self._the_all_data[:]
@@ -276,7 +288,7 @@ class IDX:
         return False
 
 
-class IDXDataset(IDataset):
+class IDXDataset(AbstractDataset):
     r"""
     Args:
         file: idx格式文件路径，支持gzip压缩格式与未压缩原始idx文件。
@@ -297,16 +309,23 @@ class IDXDataset(IDataset):
 
     _all_data: np.ndarray
 
-    def __init__(self, file: Path, work_dir: Path, all_data=False):
-        super().__init__()
+    def __init__(
+        self,
+        file: Path,
+        work_dir: Path,
+        all_data=False,
+        data_transform=None,
+        label_transform=None,
+    ):
+        super().__init__(data_transform=data_transform, label_transform=label_transform)
         if not file.exists() or not file.is_file():
             raise ValueError("File must be a idx format!")
         self._file = file
         self._work_dir = work_dir
-
         self._idx = None
         # TODO：BufferReader本来就不是为了用来做随机seek的，增量seek读文件，坑比较，先全量
         # TODO: 复现，连续读11张，然后在反过来读就不行了
+
         self._all_data = True
 
     def _load(self) -> None:
@@ -345,11 +364,17 @@ class IDXDataset(IDataset):
                 dst_fd.write(chunk)
         return dst_file
 
-    def __getitem__(self, indexes: int | list[int]) -> np.ndarray:
-        self._load()
-        return self._idx.read(indexes)
+    def transform(self, data):
+        if self._all_data:
+            return data
+        else:
+            return super().transform(data)
 
-    def __len__(self) -> int:
+    def get_item(self, slices: int | list[int]) -> np.ndarray:
+        self._load()
+        return self._idx.read(slices)
+
+    def len(self) -> int:
         self._load()
         return self._idx.count
 

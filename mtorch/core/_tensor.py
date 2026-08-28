@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from mtorch._interfaces import ITensor, IOperator
-from ._core import data_array, isscalar, ones_like
+from ._core import _data_array, _isscalar, _ones_like
 from mtorch.autograd import backward
 from typing import Any
 
@@ -25,8 +25,8 @@ class Tensor(ITensor):
         name: str = None,
         require_grad: bool = False,
     ):
-        if isscalar(data) or isinstance(data, list) or isinstance(data, tuple):
-            data = data_array(data)
+        if _isscalar(data) or isinstance(data, list) or isinstance(data, tuple):
+            data = _data_array(data)
         self.data = data
         self.grad = None
         self.__name = name
@@ -85,7 +85,7 @@ class Tensor(ITensor):
         return self.data.dtype
 
     def init_grad(self):
-        self.grad = ones_like(self.data)
+        self.grad = _ones_like(self.data)
 
     def __len__(self):
         return len(self.data)

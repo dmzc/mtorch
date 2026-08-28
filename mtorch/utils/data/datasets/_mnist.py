@@ -48,6 +48,9 @@ class Mnist(AbstractDataset):
             data=self._data_idx_dataset[slices], label=self._label_idx_dataset[slices]
         )
 
+    def transform(self, data):
+        return data
+
     def _ensure(self) -> None:
         if self._ensured:
             if self._data_idx_dataset is None:
@@ -80,9 +83,14 @@ class Mnist(AbstractDataset):
             self._download_file(f"{url_base}{label_name}", str(label_file))
 
         self._data_idx_dataset = IDXDataset(
-            file=data_file, work_dir=root_dir, all_data=True
+            file=data_file,
+            work_dir=root_dir,
+            all_data=True,
+            data_transform=self._data_transform,
         )
-        self._label_idx_dataset = IDXDataset(file=label_file, work_dir=root_dir)
+        self._label_idx_dataset = IDXDataset(
+            file=label_file, work_dir=root_dir, label_transform=self._label_transform
+        )
 
     def _download_file(self, url: str, file: str):
         def _download_progress(block_num, block_size, total_size):

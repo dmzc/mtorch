@@ -579,9 +579,30 @@ class Matmul(Operator):
         return _matmul(left=x, right=w)
 
     def backward(self, dout: DataArray) -> DataArray:
+
         x_data = self.inputs[0].data
         w_data = self.inputs[1].data
         return _matmul(dout, w_data.T), _matmul(x_data.T, dout)
+        # return None, _matmul(x_data.T, dout)
+        # x_data = self.inputs[0].data  # [N, Din]
+        # w_data = self.inputs[1].data  # [Din, Dout]
+        # dout_data = dout.data  # [N, Dout]
+
+        # dw = x_data.T @ dout_data
+        # op(A)=A.T(trans_a=T), op(B)=B(trans_b=N)
+        # 输出shape: (Din, Dout)
+        # m, n = x_data.shape[1], dout_data.shape[1]
+        # 预分配 C‑order 空缓冲区，dgemm直接写入这里
+        # dw_buf = np.empty((m, n), dtype=x_data.dtype, order="C")
+        # blis.gemm(
+        #     alpha=1.0,
+        #     a=x_data,
+        #     b=dout_data,
+        #     trans_a="T",
+        #     trans_b="N",
+        #     c=dw_buf,  # 关键：直接写C序buffer，不使用dgemm默认返回值
+        #     beta=0.0,
+        # )
 
 
 def matmul(x: DataArray, w: DataArray) -> ITensor:

@@ -31,7 +31,12 @@ class AbstractDataset(IDataset):
                 raise TypeError("Does not support multi‑dimensional slicing!")
         if isinstance(slices, int):  # 单个数字直接返回了值，统一下
             slices = slice(slices, slices + 1)
-        data = self.get_item(slices=slices)
+        return self.transform(self.get_item(slices=slices))
+
+    def __len__(self):
+        return self.len()
+
+    def transform(self, data: DatasetData) -> DatasetData:
         data_transform = self._data_transform
         label_transform = self._label_transform
         if data_transform is not None or (
@@ -48,11 +53,7 @@ class AbstractDataset(IDataset):
                     n_label.append(label_transform(item))
                 data.label = np.array(n_label)
             return data
-        else:
-            return data
-
-    def __len__(self):
-        return self.len()
+        return data
 
     def len(self) -> int:
         raise NotImplementedError("Sub class must implements len!")
