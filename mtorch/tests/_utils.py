@@ -1,13 +1,18 @@
-from pathlib import Path
 from contextlib import contextmanager
 import importlib.util
 import sys
 
-from mtorch.utils.data.datasets import AbstractDataset
+from mtorch import CACHE_DIR
 import numpy as np
+from mtorch._interfaces import DataArray, ITensor
+from mtorch import Tensor
+from typing import Callable, Any, Literal
+from mtorch.autograd import numerical_diff
+import mtorch.core.operator as F
+from mtorch.core._core import _softmax, _logsoftmax
 
 
-TEST_DIRS = Path(__file__).parent / "_dirs"
+TEST_DIRS = CACHE_DIR
 
 
 @contextmanager
@@ -51,23 +56,167 @@ def mock_missing_package(pkg_name: str):
             sys.modules[pkg_name] = orig_sys_mod_val
 
 
-class MockDataset(AbstractDataset):
+class DiffUtils:
 
-    mock_data: np.ndarray
-    mock_label: np.ndarray
+    @staticmethod
+    def _get_aray_func(
+        operator: Literal["+", "-", "*", "/"],
+    ) -> Callable[[Any, Any], Any]:
+        def _func(v1: Any, v2: Any):
+            match operator:
+                case "+":
+                    return v1 + v2
+                case "-":
+                    return v1 - v2
+                case "*":
+                    return v1 * v2
+                case "/":
+                    return v1 / v2
 
-    def __init__(self, data: np.ndarray = None, label: np.ndarray = None):
-        super().__init__()
-        if data is not None and not isinstance(data, np.ndarray):
-            data = np.array(data)
-        if label is not None and not isinstance(label, np.ndarray):
-            label = np.array(label)
-        self.mock_data = data
-        self.mock_label = label
+        return _func
 
-    def load_data(self) -> tuple[np.ndarray] | np.ndarray:
+    @staticmethod
+    def numerical_basic(
+        proj_v: DataArray, inputs: list[Any], operator: Literal["+", "-", "*", "/"]
+    ) -> list[DataArray]:
+        temp: list[DataArray] = []
+        for item in inputs:
+            temp.append(np.array(item))
+        inputs = temp
 
-        if self.mock_label is not None:
-            return (self.mock_data, self.mock_label)
-        else:
-            return self.mock_data
+        return numerical_diff(
+            func=DiffUtils._get_aray_func(operator=operator),
+            inputs=inputs,
+            proj_v=proj_v,
+        )
+
+    @staticmethod
+    def backward_basic(
+        proj_v: Any, inputs: list[Any], operator: Literal["+", "-", "*", "/"]
+    ) -> list[DataArray]:
+        v1 = Tensor(data=inputs[0])
+        v2 = Tensor(data=inputs[1])
+        v3: ITensor = DiffUtils._get_aray_func(operator=operator)(v1, v2)
+        v3.grad = np.array(proj_v)
+        v3.backward()
+        return [v1.grad, v2.grad]
+
+    @staticmethod
+    def numerical_add(proj_v: DataArray, inputs: list[DataArray]) -> list[DataArray]:
+        return DiffUtils.numerical_basic(proj_v=proj_v, inputs=inputs, operator="+")
+
+    @staticmethod
+    def backward_add(proj_v: DataArray, inputs: list[DataArray]) -> list[DataArray]:
+        return DiffUtils.backward_basic(proj_v=proj_v, inputs=inputs, operator="+")
+
+    @staticmethod
+    def numerical_sub(proj_v: DataArray, inputs: list[DataArray]) -> list[DataArray]:
+        return DiffUtils.numerical_basic(proj_v=proj_v, inputs=inputs, operator="-")
+
+    @staticmethod
+    def backward_sub(proj_v: DataArray, inputs: list[DataArray]) -> list[DataArray]:
+        return DiffUtils.backward_basic(proj_v=proj_v, inputs=inputs, operator="-")
+
+    @staticmethod
+    def numerical_mul(proj_v: DataArray, inputs: list[DataArray]) -> list[DataArray]:
+        return DiffUtils.numerical_basic(proj_v=proj_v, inputs=inputs, operator="*")
+
+    @staticmethod
+    def backward_mul(proj_v: DataArray, inputs: list[DataArray]) -> list[DataArray]:
+        return DiffUtils.backward_basic(proj_v=proj_v, inputs=inputs, operator="*")
+
+    @staticmethod
+    def numerical_div(proj_v: DataArray, inputs: list[DataArray]) -> list[DataArray]:
+        return DiffUtils.numerical_basic(proj_v=proj_v, inputs=inputs, operator="/")
+
+    @staticmethod
+    def backward_div(proj_v: DataArray, inputs: list[DataArray]) -> list[DataArray]:
+        return DiffUtils.backward_basic(proj_v=proj_v, inputs=inputs, operator="/")
+
+    def backward_softmax(proj_v: Any, inputs: list[Any]) -> DataArray:
+        input: ITensor = Tensor(inputs[0])
+        output: ITensor = F.softmax(input)
+        output.grad = np.array(proj_v)
+        output.backward()
+        return [input.grad]
+
+    def numerical_softmax(proj_v: Any, inputs: list[Any]) -> DataArray:
+        def _func(input: DataArray):
+            return _softmax(input, axis=1)
+
+        temp: list[DataArray] = []
+        for item in inputs:
+            temp.append(np.array(item))
+        inputs: list[DataArray] = temp
+        return numerical_diff(
+            func=_func,
+            inputs=inputs,
+            proj_v=proj_v,
+        )
+
+    def backward_logSoftmax(proj_v: Any, inputs: list[Any]) -> DataArray:
+        input: ITensor = Tensor(inputs[0])
+        output: ITensor = F.logSoftmax(input)
+        output.grad = np.array(proj_v)
+        output.backward()
+        return [input.grad]
+
+    def numerical_logSoftmax(proj_v: Any, inputs: list[Any]) -> DataArray:
+        def _func(input: DataArray):
+            return _logsoftmax(input, axis=1)
+
+        temp: list[DataArray] = []
+        for item in inputs:
+            temp.append(np.array(item))
+        inputs: list[DataArray] = temp
+        return numerical_diff(
+            func=_func,
+            inputs=inputs,
+            proj_v=proj_v,
+        )
+
+    def backward_crossEntroyLoss(proj_v: Any, inputs: list[Any]) -> DataArray:
+        x: ITensor = Tensor(inputs[0])
+        output: ITensor = F.crossEntropyLoss(x, inputs[1])
+        output.grad = np.array(proj_v)
+        output.backward()
+        return [x.grad]
+
+    def numerical_crossEntroyLoss(proj_v: Any, inputs: list[Any]) -> DataArray:
+        def _func(x: DataArray, t: DataArray):
+            return F.CrossEntropyLoss().forward(x, t)
+
+        inputs: list[DataArray] = [
+            np.astype(np.array(inputs[0]), np.float64),
+            np.array(inputs[1]),
+        ]
+        return numerical_diff(
+            func=_func,
+            inputs=inputs,
+            params=[inputs[0]],
+            proj_v=proj_v,
+        )
+
+    @staticmethod
+    def assert_consistency(
+        inputs: list[DataArray],
+        backward_func: Callable[[DataArray, list[DataArray]], list[DataArray]],
+        numerical_func: Callable[[DataArray, list[DataArray]], list[DataArray]],
+        msg: str,
+        output_shape: tuple[int],
+        sample_size: int = 10,
+    ):
+        flag = True
+        for _ in range(sample_size):
+            proj_v = np.random.rand(*output_shape)
+            backward_grads = backward_func(proj_v, inputs)
+            numerical_grads = numerical_func(proj_v, inputs)
+            grad_count = len(backward_grads)
+            if grad_count != len(numerical_grads):
+                flag = False
+                break
+            for idx in range(grad_count):
+                if not np.allclose(numerical_grads[idx], backward_grads[idx]):
+                    flag = False
+                    break
+        assert flag, msg

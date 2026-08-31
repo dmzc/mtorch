@@ -2,25 +2,33 @@ from mtorch import Tensor, ITensor
 import mtorch.core.operator as F
 import numpy as np
 from typing import Any
+from mtorch.tests._utils import DiffUtils
 
 
 def test_add():
-    v1 = Tensor(data=2.0)
-    v2 = Tensor(data=8.0)
-    v3: ITensor = v1 + v2
-    v3.grad = np.array(2.0)
-    v3.backward()
-    assert v1.grad.tolist() == 2.0 and v2.grad.tolist() == 2.0, "加法反向传播"
 
-    v1 = Tensor(data=2.0)
-    v2 = Tensor(data=[[1, 2, 3], [4, 5, 6]])
-    v3: ITensor = v1 + v2
-    v3.grad = np.array([[1, 1, 1], [3, 3, 3]])
-    v3.backward()
-    assert v1.grad.tolist() == 12 and v2.grad.tolist() == [
+    grad1, grad2 = DiffUtils.backward_add(
+        2.0,
+        [2.0, 8.0],
+    )
+    assert grad1.tolist() == 2.0 and grad2.tolist() == 2.0, "加法反向传播"
+
+    grad1, grad2 = DiffUtils.backward_add(
+        [[1, 1, 1], [3, 3, 3]],
+        [2.0, [[1, 2, 3], [4, 5, 6]]],
+    )
+    assert grad1.tolist() == 12 and grad2.tolist() == [
         [1, 1, 1],
         [3, 3, 3],
     ], "前向传播发生补全后也能正常反向传播"
+
+    DiffUtils.assert_consistency(
+        backward_func=DiffUtils.backward_add,
+        numerical_func=DiffUtils.numerical_add,
+        inputs=[np.array(2.0), np.array([[1, 2, 3], [4, 5, 6]])],
+        output_shape=(2, 3),
+        msg="加法算子反向传播微分和数值微分一致",
+    )
 
 
 def test_neg():
@@ -32,67 +40,77 @@ def test_neg():
 
 
 def test_sub():
-    v1 = Tensor(data=2.0)
-    v2 = Tensor(data=8.0)
+    grad1, grad2 = DiffUtils.backward_sub(
+        2.0,
+        [2.0, 8.0],
+    )
+    assert grad1.tolist() == 2.0 and grad2.tolist() == -2.0, "减法反向传播"
 
-    v3: ITensor = v1 - v2
-    v3.grad = np.array(2.0)
-    v3.backward()
-    assert v1.grad.tolist() == 2.0 and v2.grad.tolist() == -2.0, "减法反向传播"
-
-    v1 = Tensor(data=2.0)
-    v2 = Tensor(data=[[1, 2, 3], [4, 5, 6]])
-    v3: ITensor = v1 - v2
-    v3.grad = np.array([[1, 1, 1], [3, 3, 3]])
-    v3.backward()
-    assert v1.grad.tolist() == 12 and v2.grad.tolist() == [
+    grad1, grad2 = DiffUtils.backward_sub(
+        [[1, 1, 1], [3, 3, 3]],
+        [2.0, [[1, 2, 3], [4, 5, 6]]],
+    )
+    assert grad1.tolist() == 12 and grad2.tolist() == [
         [-1, -1, -1],
         [-3, -3, -3],
     ], "前向传播发生补全后也能正常反向传播"
 
+    DiffUtils.assert_consistency(
+        backward_func=DiffUtils.backward_sub,
+        numerical_func=DiffUtils.numerical_sub,
+        inputs=[np.array(2.0), np.array([[1, 2, 3], [4, 5, 6]])],
+        output_shape=(2, 3),
+        msg="减法算子反向传播微分和数值微分一致",
+    )
+
 
 def test_mul():
-    v1 = Tensor(data=2.0)
-    v2 = Tensor(data=8.0)
 
-    v3: ITensor = v1 * v2
-    v3.grad = np.array(2.0)
-    v3.backward()
-    assert v1.grad.tolist() == 16 and v2.grad.tolist() == 4, "乘法反向传播"
+    grad1, grad2 = DiffUtils.backward_mul(2.0, inputs=[2.0, 8.0])
+    assert grad1.tolist() == 16 and grad2.tolist() == 4, "乘法反向传播"
 
-    v1 = Tensor(data=2.0)
-    v2 = Tensor(data=[[1, 2, 3], [4, 5, 6]])
-    v3: ITensor = v1 * v2
-    v3.grad = np.array([[1, 1, 1], [3, 3, 3]])
-    v3.backward()
-    assert v1.grad.tolist() == 51 and v2.grad.tolist() == [
+    grad1, grad2 = DiffUtils.backward_mul(
+        [[1, 1, 1], [3, 3, 3]], inputs=[2.0, [[1, 2, 3], [4, 5, 6]]]
+    )
+    assert grad1.tolist() == 51 and grad2.tolist() == [
         [2, 2, 2],
         [6, 6, 6],
     ], "前向传播发生补全后也能正常反向传播"
 
+    DiffUtils.assert_consistency(
+        backward_func=DiffUtils.backward_mul,
+        numerical_func=DiffUtils.numerical_mul,
+        inputs=[2.0, [[1, 2, 3], [4, 5, 6]]],
+        output_shape=(2, 3),
+        msg="乘法算子反向传播微分和数值微分一致",
+    )
+
 
 def test_div():
-    v1 = Tensor(data=8.0)
-    v2 = Tensor(data=2.0)
 
-    v3: ITensor = v1 / v2
-    v3.grad = np.array(2.0)
-    v3.backward()
-    assert v1.grad.tolist() == 1 and v2.grad.tolist() == -4.0, "乘法反向传播"
+    grad1, grad2 = DiffUtils.backward_div(2.0, inputs=[8.0, 2.0])
+    assert grad1.tolist() == 1 and grad2.tolist() == -4.0, "乘法反向传播"
 
-    v1 = Tensor(data=[[2, 4, 6], [8, 10, 12]])
-    v2 = Tensor(data=2.0)
-    v3: ITensor = v1 / v2
-    v3.grad = np.array([[2, 2, 2], [4, 4, 4]])
-    v3.backward()
+    grad1, grad2 = DiffUtils.backward_div(
+        [[2, 2, 2], [4, 4, 4]], inputs=[[[2, 4, 6], [8, 10, 12]], 2.0]
+    )
+
     assert (
-        v1.grad.tolist()
+        grad1.tolist()
         == [
             [1.0, 1.0, 1.0],
             [2.0, 2.0, 2.0],
         ]
-        and v2.grad.tolist() == -36.0
+        and grad2.tolist() == -36.0
     ), "前向传播发生补全后也能正常反向传播"
+
+    DiffUtils.assert_consistency(
+        backward_func=DiffUtils.backward_div,
+        numerical_func=DiffUtils.numerical_div,
+        inputs=[2.0, [[1, 2, 3], [4, 5, 6]]],
+        output_shape=(2, 3),
+        msg="除法算子反向传播微分和数值微分一致",
+    )
 
 
 def test_pow():
@@ -472,11 +490,6 @@ def test_getitem():
     )
 
 
-def test_setitem():
-    # TODO 原地赋值貌似没有办法反向传播
-    pass
-
-
 def test_softmax():
 
     input: ITensor = Tensor([[10, 42, 20], [25, 45, 32]])
@@ -484,14 +497,19 @@ def test_softmax():
     output.grad = np.array([[1, 1, 1], [1, 1, 1]])
     output.backward()
     output_data = output.data
-
     assert (
         isinstance(output, Tensor)
         and np.allclose(np.sum(output_data, axis=1).tolist(), [1.0, 1.0])
         and np.argsort(output_data, axis=1).tolist() == [[0, 2, 1], [0, 2, 1]]
     ), "softmax前向传播数值"
-    # TODO:还需要支持数据微分来验证反向传播
-    # assert input.grad.tolist() == [], "softmax反向向传播梯度"
+
+    DiffUtils.assert_consistency(
+        inputs=[[[10, 42, 20], [25, 45, 32]]],
+        backward_func=DiffUtils.backward_softmax,
+        numerical_func=DiffUtils.numerical_softmax,
+        output_shape=(2, 3),
+        msg="softmax算子反向传播和数值微分一致",
+    )
 
     # TODO：非二维数据、非最后维度进行softmax
 
@@ -509,6 +527,21 @@ def test_logSoftmax():
         and np.argsort(output_data, axis=1).tolist() == [[0, 2, 1], [0, 2, 1]]
     ), "logSoftmax前向传播数值"
 
+    DiffUtils.assert_consistency(
+        inputs=[[[10, 42, 20], [25, 45, 32]]],
+        backward_func=DiffUtils.backward_logSoftmax,
+        numerical_func=DiffUtils.numerical_logSoftmax,
+        output_shape=(2, 3),
+        msg="logSoftmax算子反向传播和数值微分一致",
+    )
+
 
 def test_crossEntroyLoss():
-    pass
+
+    DiffUtils.assert_consistency(
+        inputs=[[[10, 42, 20], [25, 45, 32]], [1, 0]],
+        backward_func=DiffUtils.backward_crossEntroyLoss,
+        numerical_func=DiffUtils.numerical_crossEntroyLoss,
+        output_shape=(1,),
+        msg="crossEntroyLosss算子反向传播和数值微分一致",
+    )

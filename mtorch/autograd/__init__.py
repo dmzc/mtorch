@@ -1,4 +1,3 @@
-from . import _functional
-from ._functional import backward
+from ._functional import backward, numerical_diff
 
-__all__ = ["_functional", "backward"]
+__all__ = ["backward", "numerical_diff"]

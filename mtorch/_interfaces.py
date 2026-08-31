@@ -19,8 +19,19 @@ class ITensor(ABC):
     data: DataArray
     creator: Optional[IOperator]
     generation: int
-    require_grad: bool
     grad: Optional[DataArray]
+
+    @property
+    def require_grad(self):
+        raise NotImplementedError(
+            "The property getter 'require_grad' must be implemented!"
+        )
+
+    @require_grad.setter
+    def require_grad(self, value):
+        raise NotImplementedError(
+            "The property setter 'require_grad' must be implemented!"
+        )
 
     @property
     def id(self) -> str: ...

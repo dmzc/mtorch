@@ -18,6 +18,8 @@ class Tensor(ITensor):
 
     __array_priority__ = 200
 
+    _require_grad: bool
+
     def __init__(
         self,
         data: Any,  # 数值、列表、元组、DataArray，不能是Tensor实例
@@ -30,7 +32,7 @@ class Tensor(ITensor):
         self.data = data
         self.grad = None
         self.__name = name
-        self.require_grad = require_grad
+        self._require_grad = require_grad
         if ENABLE_BACKPROGATION:
             creator = self.creator = creator
             if creator is None:
@@ -84,6 +86,15 @@ class Tensor(ITensor):
     def dtype(self):
         return self.data.dtype
 
+    @property
+    def require_grad(self):
+        return self._require_grad
+
+    @require_grad.setter
+    def require_grad(self, value):
+        # 先不做类型校验，看调用次数是否频繁
+        self._require_grad = value
+
     def init_grad(self):
         self.grad = _ones_like(self.data)
 
@@ -91,7 +102,20 @@ class Tensor(ITensor):
         return len(self.data)
 
     def __repr__(self):
-        if self.data is None:
-            return "tensor(None)"
-        p = str(self.data).replace("\n", "\n" + " " * 9)
-        return "tensor(" + p + ")"
+        data_str = str(self.data).replace("\n", "\n" + " " * 9)
+        return f"Tensor( {data_str} )"
+
+
+class Parameter(Tensor):
+
+    @property
+    def require_grad(self):
+        return True
+
+    @require_grad.setter
+    def require_grad(self, value):
+        raise RuntimeError("Parameter's require_grad always True!")
+
+    def __repr__(self):
+        data_str = str(self.data).replace("\n", "\n" + " " * 9)
+        return f"Parameter( {data_str} )"

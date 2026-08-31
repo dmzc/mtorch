@@ -1,4 +1,4 @@
-from mtorch._interfaces import (
+from ._interfaces import (
     Dataset_Type,
     Slice_Type,
     DatasetData,
@@ -7,7 +7,7 @@ from mtorch._interfaces import (
     ITensor,
     ITransform,
 )
-from mtorch.core import CACHE_DIR, Tensor, operator, pkg_enabled
+from .core import CACHE_DIR, Tensor, operator, pkg_enabled
 
 __version__ = "0.0.13"
 
