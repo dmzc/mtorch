@@ -12,7 +12,7 @@ import mtorch.core.operator as F
 from mtorch.core._core import _softmax, _logsoftmax
 
 
-TEST_DIRS = CACHE_DIR
+TEST_DIRS = CACHE_DIR / "test"
 
 
 @contextmanager

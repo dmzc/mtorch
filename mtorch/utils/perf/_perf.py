@@ -76,10 +76,10 @@ class CodeExecutionProfiler(AbstractProfiler):
 
     def __enter__(self):
         if self._start_time is None:
-            self._per_start_time = ProfilerUtils.get_current_time()
+            self._per_start_time = ProfilerService.get_current_time()
 
     def __exit__(self, exc_type, exc, tb):
-        delta_ns = ProfilerUtils.get_current_time() - self._per_start_time
+        delta_ns = ProfilerService.get_current_time() - self._per_start_time
         delta_ms = delta_ns / 1_000_000
         self.consum(f"[{self._scene}] {delta_ms:.2f} ms")
 
@@ -119,10 +119,10 @@ class SnapshotProfiler(AbstractProfiler):
         if not tracemalloc.is_tracing():
             tracemalloc.start()
         if self._start_snapshot is None:
-            self._per_start_snapshot = ProfilerUtils.get_task_py_snapshot()
+            self._per_start_snapshot = ProfilerService.get_task_py_snapshot()
 
     def __exit__(self, exc_type, exc, tb):
-        diffs = ProfilerUtils.get_task_py_snapshot().compare_to(
+        diffs = ProfilerService.get_task_py_snapshot().compare_to(
             self._start_snapshot, key_type="lineno"
         )
         self.consum({f"[{self._scene}] ": [str[diff] for diff in diffs[: self._topn]]})
@@ -175,24 +175,24 @@ class MemoryUsageProfiler(AbstractProfiler):
 
         if self._start_py_mm is None:
             self._start_py_mm = self._per_start_py_mm = (
-                ProfilerUtils.get_task_py_memory()
+                ProfilerService.get_task_py_memory()
             )
 
         if self._start_all_mm is None:
             self._start_all_mm = self._per_start_all_mm = (
-                ProfilerUtils.get_task_all_memory()
+                ProfilerService.get_task_all_memory()
             )
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
 
-        delta_py_mm = ProfilerUtils.get_task_py_memory() - self._per_start_py_mm
-        delta_all_mm = ProfilerUtils.get_task_all_memory() - self._per_start_all_mm
+        delta_py_mm = ProfilerService.get_task_py_memory() - self._per_start_py_mm
+        delta_all_mm = ProfilerService.get_task_all_memory() - self._per_start_all_mm
         self.consum(
-            f"{[self._scene]} python内存新增 {ProfilerUtils.format_memory(delta_py_mm)}"
+            f"{[self._scene]} python内存新增 {ProfilerService.format_memory(delta_py_mm)}"
         )
         self.consum(
-            f"{[self._scene]} 物理内存新增 {ProfilerUtils.format_memory(delta_all_mm)}"
+            f"{[self._scene]} 物理内存新增 {ProfilerService.format_memory(delta_all_mm)}"
         )
         gc.enable()
 
@@ -205,7 +205,7 @@ class MemoryUsageProfiler(AbstractProfiler):
         return self
 
 
-class ProfilerUtils:
+class ProfilerService:
 
     B = 1
     KB = 1024
@@ -244,14 +244,14 @@ class ProfilerUtils:
             is_minus = True
             bytes = abs(bytes)
         mm_str = None
-        if bytes < ProfilerUtils.KB:
+        if bytes < ProfilerService.KB:
             mm_str = f"{bytes} B"
-        elif bytes < ProfilerUtils.MB:
-            mm_str = f"{bytes / ProfilerUtils.KB:.2f} KB"
-        elif bytes < ProfilerUtils.GB:
-            mm_str = f"{bytes / ProfilerUtils.MB:.2f} MB"
+        elif bytes < ProfilerService.MB:
+            mm_str = f"{bytes / ProfilerService.KB:.2f} KB"
+        elif bytes < ProfilerService.GB:
+            mm_str = f"{bytes / ProfilerService.MB:.2f} MB"
         else:
-            mm_str = f"{bytes / ProfilerUtils.GB:.2f} GB"
+            mm_str = f"{bytes / ProfilerService.GB:.2f} GB"
         if is_minus:
             mm_str = f"-{mm_str}"
         return mm_str

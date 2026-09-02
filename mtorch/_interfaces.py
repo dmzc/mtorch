@@ -11,6 +11,25 @@ import numpy as np  # TODO:删除，上层用DataArray
 DataArray: TypeAlias = np.ndarray[Any, Any]
 
 
+class DataArray1(ABC):
+
+    @property
+    def shape(self) -> tuple[int]:
+        raise NotImplementedError("")
+
+    @property
+    def dtype(self) -> Any:
+        raise NotImplementedError("")
+
+    @property
+    def ndim(self) -> int:
+        raise NotImplementedError("")
+
+    @property
+    def T(self) -> tuple[int]:
+        raise NotImplementedError("")
+
+
 class ITensor(ABC):
     """
     张量
@@ -85,6 +104,9 @@ class IModule(ABC):
     @abstractmethod
     def parameters(self) -> Iterable[ITensor]: ...
 
+    @abstractmethod
+    def clear_grads(self) -> None: ...
+
 
 class IOptimizer(ABC):
     _params_obj: IModule
@@ -153,23 +175,61 @@ class IDataLoader(ABC):
         )
 
 
+@dataclass
+class ITrainCheckpoint:
+    model_state: Any = None
+    optim_state: Any = None
+
+
 class ITrainer(ABC):
     r"""
-    TODO:
-        1. 训练
-        2. 评估，不在这里做，应该是抽象工具方法，但训练过程也有精度、损失评估
+    训练器
     """
-
-    _model: IModule  # 模型
-    _dataloader: IDataLoader  # 数据加载器
-    _optimizer: IOptimizer  # 梯度更新器
-    _params: Any  # 超参数
 
     def train(self) -> None:
         pass
 
-    def evaluation(self) -> None:
+    def save(self) -> None:
         pass
+
+
+class IMetric(ABC):
+    r"""
+    评估指标
+    一个IMetric实例代表单个指标，例如准确率、MSE。
+
+    使用流程：
+        1. 每轮验证开始调用 reset()，清空内部计算缓存
+        2. 遍历验证数据集，每个batch调用 update(pred, target) 送入数据
+        3. 全部batch处理完毕后，调用 compute() 获取最终指标数值
+    适用场景：
+        - 验证集评估
+        - 训练集统计指标，观察训练过程准确率、损失相关指标变化
+    """
+
+    @abstractmethod
+    def update(self, pred: DataArray, target: DataArray) -> IMetric:
+        """
+        接收单批次预测值与真实标签。
+        示例：遍历验证集，每个batch调用一次。
+        """
+        ...
+
+    @abstractmethod
+    def compute(self) -> float:
+        """
+        全部批次输入完成后计算指标结果。
+        示例：准确率实例返回 0.86
+        """
+        ...
+
+    @abstractmethod
+    def reset(self) -> IMetric:
+        """
+        清除内部中间数据，准备下一轮评估。
+        示例：每轮epoch验证开始前调用。
+        """
+        ...
 
 
 class ITransform(Protocol):
@@ -184,8 +244,6 @@ class ITransform(Protocol):
         - 仅支持 numpy.ndarray 作为输入输出
         - __call__ 接收单样本数组，返回处理完成的样本数组
     """
-
-    # def __repr__(self): ...
 
     def __repr__(self) -> str: ...
 

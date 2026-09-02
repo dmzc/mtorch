@@ -1,5 +1,14 @@
-from . import data, evaluation, render, trainer
+from . import data, metric, render, trainer, persist, perf
 
-from ._util import dumps, dumps_stream, loads
 
-__all__ = ["data", "evaluation", "render", "trainer", "dumps", "dumps_stream", "loads"]
+__all__ = [
+    "data",
+    "metric",
+    "render",
+    "trainer",
+    "dumps",
+    "dumps_stream",
+    "loads",
+    "persist",
+    "perf",
+]

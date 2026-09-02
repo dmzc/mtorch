@@ -1,9 +1,10 @@
 from __future__ import annotations
 import numpy as np
-from mtorch import Tensor, ITensor
+from mtorch import Tensor
 import orjson
 from pathlib import Path
 import zstandard
+from typing import Any
 
 
 class Object:
@@ -106,3 +107,11 @@ def load_json(path:str|Path,decompress=False):
 
 #     obj=[[12,34],[12,34]]
 #     f.write(json.dumps(obj).encode("utf-8"))
+
+from mtorch.utils.persist import PersistService
+from pathlib import Path
+src_file=[Path("../112")]
+target_file=Path("./test.tar.gz")
+PersistService.tar(src_files=src_file,  target_file=target_file)
+# PersistService.list_tar(src_file=target_file)
+# PersistService.utar(src_file=target_file,target_dir=Path("."))

@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from mtorch import DatasetData, Dataset_Type, ITransform, CACHE_DIR
+from mtorch.utils.persist import PersistService
 from ._dataset import AbstractDataset
 from ._idx import IDXDataset
 from typing import Optional
@@ -71,15 +72,11 @@ class Mnist(AbstractDataset):
         data_file = root_dir / data_name
         label_file = root_dir / label_name
 
-        def _ensure_root_dir():
-            if not root_dir.exists():
-                root_dir.mkdir(parents=True, exist_ok=True)
-
         if not data_file.exists():
-            _ensure_root_dir()
+            PersistService.ensure_dir_exist(root_dir)
             self._download_file(f"{url_base}{data_name}", str(data_file))
         if not label_file.exists():
-            _ensure_root_dir()
+            PersistService.ensure_dir_exist(root_dir)
             self._download_file(f"{url_base}{label_name}", str(label_file))
 
         self._data_idx_dataset = IDXDataset(

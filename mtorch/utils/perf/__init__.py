@@ -2,12 +2,12 @@ from ._perf import (
     CodeExecutionProfiler,
     MemoryUsageProfiler,
     SnapshotProfiler,
-    ProfilerUtils,
+    ProfilerService,
 )
 
 __all__ = [
     "CodeExecutionProfiler",
     "MemoryUsageProfiler",
     "SnapshotProfiler",
-    "ProfilerUtils",
+    "ProfilerService",
 ]

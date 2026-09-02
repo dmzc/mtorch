@@ -1,4 +1,4 @@
-import mtorch.utils as mutils
+from mtorch.utils.persist import PersistService
 from mtorch.tests._utils import TEST_DIRS, mock_missing_package
 import numpy as np
 from pathlib import Path
@@ -92,17 +92,17 @@ class _MockDumpDataIterator:
         return list1
 
 
-def test_dumps():
-    file_dir = TEST_DIRS / current_filename / "test_dumps"
+def test_save_json():
+    file_dir = TEST_DIRS / current_filename / "test_save_json"
     filename: Path = file_dir / "test"
     _clean(file_dir)
 
     data = np.eye(10, 10)
 
     # 1. 不压缩直接落地
-    t_file = mutils.dumps(file=filename, obj=data, compress=False)
+    t_file = PersistService.save_json(file=filename, obj=data, compress=False)
 
-    load_data = mutils.loads(file=t_file)
+    load_data = PersistService.load_json(file=t_file)
 
     assert (
         str(t_file).endswith(".json") and load_data == data.tolist()
@@ -111,27 +111,27 @@ def test_dumps():
     # 2. 不压缩直接落地（缺少orjson）
     with mock_missing_package("orjson"):
 
-        t_file = mutils.dumps(file=filename, obj=data, compress=False)
+        t_file = PersistService.save_json(file=filename, obj=data, compress=False)
 
-        load_data = mutils.loads(file=t_file)
+        load_data = PersistService.load_json(file=t_file)
 
         assert (
             str(t_file).endswith(".json") and load_data == data.tolist()
         ), "没有安装orjson，数据能正常dumps、loads（不压缩）"
 
     # 3. 压缩直接落地
-    t_file = mutils.dumps(file=filename, obj=data, compress=True)
+    t_file = PersistService.save_json(file=filename, obj=data, compress=True)
 
-    load_data = mutils.loads(file=t_file)
+    load_data = PersistService.load_json(file=t_file)
     assert (
         str(t_file).endswith(".zst") and load_data == data.tolist()
     ), "数据能正常dumps、loads（压缩）"
 
     # 4. 压缩直接落地(缺少zstandard)
     with mock_missing_package("zstandard"):
-        t_file = mutils.dumps(file=filename, obj=data, compress=True)
+        t_file = PersistService.save_json(file=filename, obj=data, compress=True)
 
-        load_data = mutils.loads(file=t_file)
+        load_data = PersistService.load_json(file=t_file)
         assert (
             str(t_file).endswith(".gzip") and load_data == data.tolist()
         ), "缺少zstandard时，数据能正常dumps、loads（压缩）"
@@ -139,25 +139,27 @@ def test_dumps():
     # 5. 新文件会覆盖就文件
     data1 = np.eye(5, 5)
     data2 = np.eye(10, 10)
-    file1 = mutils.dumps(file=filename, obj=data1, compress=False)
-    file2 = mutils.dumps(file=filename, obj=data2, compress=False)
-    load_data = mutils.loads(file=file1)
+    file1 = PersistService.save_json(file=filename, obj=data1, compress=False)
+    file2 = PersistService.save_json(file=filename, obj=data2, compress=False)
+    load_data = PersistService.load_json(file=file1)
     assert (
         str(file1) == str(file2) and load_data == data2.tolist()
     ), "新数据会覆盖旧数据"
 
 
-def test_dumps_stream():
-    file_dir = TEST_DIRS / current_filename / "test_dumps_stream"
+def test_save_json_stream():
+    file_dir = TEST_DIRS / current_filename / "test_save_json_stream"
     filename: Path = file_dir / "test"
     _clean(file_dir)
     per_count = 2
     data = _MockDumpDataIterator(per_count=per_count, max_iteration=20)
 
     # 1. 不压缩直接落地
-    t_file = mutils.dumps_stream(file=filename, iteratable_obj=data, compress=False)
+    t_file = PersistService.save_json_stream(
+        file=filename, iteratable_obj=data, compress=False
+    )
 
-    load_data = mutils.loads(file=t_file)
+    load_data = PersistService.load_json(file=t_file)
 
     assert (
         str(t_file).endswith(".json") and load_data == data.tolist()
@@ -166,27 +168,33 @@ def test_dumps_stream():
     # 2. 不压缩直接落地（缺少orjson）
     with mock_missing_package("orjson"):
 
-        t_file = mutils.dumps_stream(file=filename, iteratable_obj=data, compress=False)
+        t_file = PersistService.save_json_stream(
+            file=filename, iteratable_obj=data, compress=False
+        )
 
-        load_data = mutils.loads(file=t_file)
+        load_data = PersistService.load_json(file=t_file)
 
         assert (
             str(t_file).endswith(".json") and load_data == data.tolist()
         ), "没有安装orjson，数据能正常流式dumps、loads（不压缩）"
 
     # 3. 压缩直接落地
-    t_file = mutils.dumps_stream(file=filename, iteratable_obj=data, compress=True)
+    t_file = PersistService.save_json_stream(
+        file=filename, iteratable_obj=data, compress=True
+    )
 
-    load_data = mutils.loads(file=t_file)
+    load_data = PersistService.load_json(file=t_file)
     assert (
         str(t_file).endswith(".zst") and load_data == data.tolist()
     ), "数据能正常dumps、loads（压缩）"
 
     # 4. 压缩直接落地(缺少zstandard)
     with mock_missing_package("zstandard"):
-        t_file = mutils.dumps_stream(file=filename, iteratable_obj=data, compress=True)
+        t_file = PersistService.save_json_stream(
+            file=filename, iteratable_obj=data, compress=True
+        )
 
-        load_data = mutils.loads(file=t_file)
+        load_data = PersistService.load_json(file=t_file)
         assert (
             str(t_file).endswith(".gzip") and load_data == data.tolist()
         ), "缺少zstandard时，数据能正常dumps、loads（压缩）"
@@ -195,9 +203,70 @@ def test_dumps_stream():
     data1 = _MockDumpDataIterator(per_count=10, max_iteration=10)
     data2 = _MockDumpDataIterator(per_count=5, max_iteration=5)
     _clean(file_dir)
-    file1 = mutils.dumps_stream(file=filename, iteratable_obj=data1, compress=False)
-    file2 = mutils.dumps_stream(file=filename, iteratable_obj=data2, compress=False)
-    load_data = mutils.loads(file=file1)
+    file1 = PersistService.save_json_stream(
+        file=filename, iteratable_obj=data1, compress=False
+    )
+    file2 = PersistService.save_json_stream(
+        file=filename, iteratable_obj=data2, compress=False
+    )
+    load_data = PersistService.load_json(file=file1)
     assert (
         str(file1) == str(file2) and load_data == data2.tolist()
     ), "新数据会覆盖旧数据"
+
+
+def test_save_pkl():
+    file_dir = TEST_DIRS / current_filename / "test_save_pkl"
+    filename: Path = file_dir / "test.pkl"
+    _clean(file_dir)
+
+    data: np.ndarray = np.astype(np.eye(10, 10), np.float64)
+
+    t_file = PersistService.save_pkl(file=filename, obj=data)
+
+    load_data: np.ndarray = PersistService.load_pkl(file=t_file)
+
+    assert (
+        "float64" == data.dtype
+        and data.dtype == load_data.dtype
+        and data.shape == load_data.shape
+    ), "nd.ndarray重新加载能保证精度不丢失"
+
+
+def test_tar():
+    file_dir = TEST_DIRS / current_filename / "test_tar"
+    _clean(file_dir)
+    raw_a1_file = file_dir / "raw/a/a1.txt"
+    raw_a_b1_file = file_dir / "raw/a/b/b1.txt"
+    PersistService.ensure_dir_exist(raw_a1_file.parent)
+    with open(raw_a1_file, mode="w") as writer:
+        writer.write("这是a目录下的a1.txt文件")
+    PersistService.ensure_dir_exist(raw_a_b1_file.parent)
+    with open(raw_a_b1_file, mode="w") as writer:
+        writer.write("这是a/b目录下的b1.txt文件")
+
+    target_dir = file_dir / "result"
+    tar_file = target_dir / "test.tar.gz"
+    PersistService.ensure_dir_exist(tar_file.parent)
+
+    PersistService.tar(src_files=[raw_a1_file], target_file=tar_file)
+    assert tar_file.exists() and PersistService.get_tar_files(tar_file=tar_file) == [
+        "a1.txt"
+    ], "单个文件正常归档"
+
+    _clean(target_dir)
+    PersistService.ensure_dir_exist(tar_file.parent)
+    PersistService.tar(src_files=[raw_a1_file.parent], target_file=tar_file)
+    output_dir = target_dir / "output"
+    PersistService.utar(tar_file=tar_file, target_dir=output_dir)
+    items: list[str] = []
+    for item in output_dir.rglob("*"):
+        items.append(str(item.relative_to(output_dir)))
+    assert items == ["a", "a\\a1.txt", "a\\b", "a\\b\\b1.txt"], "单个目录能正常归档"
+
+    _clean(target_dir)
+    PersistService.ensure_dir_exist(tar_file.parent)
+    PersistService.tar(
+        src_files=[raw_a_b1_file.parent, raw_a1_file], target_file=tar_file
+    )
+    assert items == ["a", "a\\a1.txt", "a\\b", "a\\b\\b1.txt"], "单个目录能正常归档"
