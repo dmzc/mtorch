@@ -1,6 +1,6 @@
 from . import operator
-from ._env import pkg_enabled, CACHE_DIR
-from ._tensor import Tensor
+from .env import pkg_enabled, CACHE_DIR
+from .tensor import Tensor
 
 __all__ = [
     "Tensor",

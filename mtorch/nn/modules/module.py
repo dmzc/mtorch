@@ -1,4 +1,4 @@
-from mtorch._interfaces import IModule, ITensor
+from mtorch.typing import IModule, ITensor
 from collections.abc import Iterable
 
 
@@ -33,3 +33,12 @@ class Module(IModule):
     def clear_grads(self):
         for param in self.parameters():
             param.clear_grad()
+
+    def __repr__(self) -> str:
+        return super().__repr__()
+
+    def state_dict(self):
+        pass
+
+    def load_state_dict(self):
+        pass

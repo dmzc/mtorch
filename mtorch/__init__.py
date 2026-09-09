@@ -1,4 +1,4 @@
-from ._interfaces import (
+from .typing import (
     Dataset_Type,
     Slice_Type,
     DatasetData,

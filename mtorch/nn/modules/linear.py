@@ -1,7 +1,7 @@
-from mtorch.nn.modules._module import Module
-from mtorch._interfaces import ITensor
+from mtorch.nn.modules.module import Module
+from mtorch.typing import ITensor
 import mtorch.core.operator as F
-from mtorch.core._tensor import Tensor
+from mtorch.core.tensor import Tensor
 import numpy as np
 
 

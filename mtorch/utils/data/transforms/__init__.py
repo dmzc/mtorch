@@ -1,4 +1,4 @@
-from ._dtype import (
+from .dtype import (
     ToInt8,
     ToInt16,
     ToInt32,
@@ -14,11 +14,11 @@ from ._dtype import (
     ToComplex128,
     ToBool,
 )
-from ._flatten import Flatten
+from .flatten import Flatten
 
-from ._normalize import Normalize, Standardize
+from .normalize import Normalize, Standardize
 
-from ._transform import (
+from .transform import (
     Compose,
     Conditional,
     RandomApply,

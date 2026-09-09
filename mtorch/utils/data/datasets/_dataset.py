@@ -3,7 +3,7 @@ from collections.abc import Callable
 
 import numpy as np
 
-from mtorch._interfaces import DatasetData, IDataset, ITransform
+from mtorch.typing import DatasetData, IDataset, ITransform
 
 
 class AbstractDataset(IDataset):
