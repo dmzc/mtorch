@@ -19,3 +19,6 @@ class CrossEntroyLoss(Module):
 
     def forward(self, x: np.ndarray, t: np.ndarray):
         return F.crossEntropyLoss(x, t, axis=self._axis)
+
+    def __repr__(self):
+        return f"{self.name}(axis={self._axis})"

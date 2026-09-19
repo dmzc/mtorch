@@ -79,16 +79,18 @@ class Trainer(ITrainer):
                 optimizer.step()
 
     def save(self, epoch: int, logs: any):
-        content = {
-            "max_epoch": self._max_epoch,
-            "optimizer": str(self._optimizer),
-            "current_epoch": epoch,
-            "logs": logs,  # 训练日志，比如：每轮训练耗费时间、损失值、准确率
-            "model": str(self._model),
-            "loss": str(self._losser),
-            "params": [],  # TODO:模型权重
-        }
+        # content = {
+        #     "max_epoch": self._max_epoch,
+        #     "optimizer": str(self._optimizer),
+        #     "current_epoch": epoch,
+        #     "logs": logs,  # 训练日志，比如：每轮训练耗费时间、损失值、准确率
+        #     "model": str(self._model),
+        #     "loss": str(self._losser),
+        #     "params": [],  # TODO:模型权重
+        # }
+        # TODO:
         pass
 
     def load(self, json):
+        # TODO:
         pass

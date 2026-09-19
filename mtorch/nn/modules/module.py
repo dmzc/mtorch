@@ -1,5 +1,7 @@
 from mtorch.typing import IModule, ITensor
 from collections.abc import Iterable
+from typing import Any
+from mtorch.nn.parameter import Parameter
 
 
 class Module(IModule):
@@ -11,14 +13,25 @@ class Module(IModule):
 
     def __setattr__(self, name, value):
         if isinstance(value, ITensor):
-            tensor: ITensor = value
-            if tensor.require_grad:
-                self.__subs.add(name)
+            # 中间变量上记录的梯度也需要清除
+            self.__subs.add(name)
         if isinstance(value, IModule):
             self.__subs.add(name)
         super().__setattr__(name, value)
 
-    def parameters(self) -> Iterable[ITensor]:
+    def parameters(self) -> Iterable[Parameter]:
+        subs = self.__subs
+        if subs is None:
+            return
+        for sub in subs:
+            obj = getattr(self, sub)
+            if isinstance(obj, Parameter):
+                yield obj
+            else:
+                m: IModule = obj
+                yield from m.parameters()
+
+    def tensors(self) -> Iterable[ITensor]:
         subs = self.__subs
         if subs is None:
             return
@@ -28,17 +41,22 @@ class Module(IModule):
                 yield obj
             else:
                 m: IModule = obj
-                yield from m.parameters()
+                yield from m.tensors()
 
     def clear_grads(self):
-        for param in self.parameters():
-            param.clear_grad()
+        for tensor in self.tensors():
+            tensor.clear_grad()
 
     def __repr__(self) -> str:
-        return super().__repr__()
+        return f"{self.name}()"
 
-    def state_dict(self):
-        pass
+    def state_dict(self) -> dict[str, Any]:
+        # TODO:
+        raise NotImplementedError("Subclass must implements state_dict.")
 
-    def load_state_dict(self):
-        pass
+    def load_state_dict(self, state: dict[str, Any]):
+        raise NotImplementedError("Subclass must implements load_dict.")
+
+    @property
+    def name(self) -> str:
+        return self.__class__.__name__

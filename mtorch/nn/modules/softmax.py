@@ -13,8 +13,14 @@ class Softmax(Module):
     def forward(self, x) -> ITensor:
         return F.softmax(x, self._axis)
 
+    def __repr__(self):
+        return f"{self.name}(axis={self._axis})"
+
 
 class LogSoftmax(Softmax):
 
     def forward(self, x):
         return F.logSoftmax(x, self._axis)
+
+    def __repr__(self):
+        return f"{self.name}(axis={self._axis})"

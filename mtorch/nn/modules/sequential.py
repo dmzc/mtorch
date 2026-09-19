@@ -1,4 +1,4 @@
-from typing import overload, OrderedDict,Any
+from typing import overload, OrderedDict, Any
 
 from mtorch.nn.modules.module import Module
 import torch
@@ -36,3 +36,16 @@ class Sequential(Module):
         for sub in self.subs:
             x = sub.forward(x)
         return x
+
+    def __repr__(self):
+        s_str = None
+        for sub in self.subs:
+            if s_str is None:
+                s_str = f"{self.name}(\n\t\t{repr(sub)}"
+            else:
+                s_str = f"{s_str}, \n\t\t{repr(sub)}"
+        if s_str is None:
+            s_str = super().__repr__()
+        else:
+            s_str = f"{s_str}\n)"
+        return s_str
