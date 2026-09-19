@@ -1,6 +1,6 @@
 import numpy as np
 from typing import Any
-from mtorch._interfaces import DataArray
+from mtorch.typing import DataArray
 
 
 def _eye(N, M=None, k=0, dtype=float) -> DataArray:

@@ -4,15 +4,15 @@ import sys
 
 from mtorch import CACHE_DIR
 import numpy as np
-from mtorch._interfaces import DataArray, ITensor
+from mtorch.typing import DataArray, ITensor
 from mtorch import Tensor
 from typing import Callable, Any, Literal
 from mtorch.autograd import numerical_diff
 import mtorch.core.operator as F
-from mtorch.core._core import _softmax, _logsoftmax
+from mtorch.core.core import _softmax, _logsoftmax
 
 
-TEST_DIRS = CACHE_DIR
+TEST_DIRS = CACHE_DIR / "test"
 
 
 @contextmanager

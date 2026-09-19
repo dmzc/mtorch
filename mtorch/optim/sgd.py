@@ -1,4 +1,4 @@
-from mtorch._interfaces import IOptimizer, IModule
+from mtorch.typing import IOptimizer, IModule
 
 
 class SGD(IOptimizer):

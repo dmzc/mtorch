@@ -1,4 +1,4 @@
-from mtorch._interfaces import DatasetData
+from mtorch.typing import DatasetData
 from mtorch.utils.data.dataloaders import DataLoader
 from mtorch.utils.data.datasets import MemoryDataset
 import numpy as np

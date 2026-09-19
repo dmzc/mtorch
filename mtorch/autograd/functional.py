@@ -1,4 +1,4 @@
-from mtorch._interfaces import ITensor, IOperator, DataArray
+from mtorch.typing import ITensor, IOperator, DataArray
 from typing import Any, Optional
 import numpy as np
 

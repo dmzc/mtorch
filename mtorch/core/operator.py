@@ -2,9 +2,9 @@ from __future__ import annotations
 from abc import abstractmethod
 import numpy as np
 import weakref
-from mtorch._interfaces import ITensor, IOperator, Slice_Type, DataArray
-from mtorch.core._tensor import Tensor
-from ._core import (
+from mtorch.typing import ITensor, IOperator, Slice_Type, DataArray
+from mtorch.core.tensor import Tensor
+from .core import (
     _sum,
     _sum_to,
     _broadcast_to,

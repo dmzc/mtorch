@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from mtorch._interfaces import ITensor, IOperator
-from ._core import _data_array, _isscalar, _ones_like
+from mtorch.typing import ITensor, IOperator
+from .core import _data_array, _isscalar, _ones_like
 from mtorch.autograd import backward
 from typing import Any
 

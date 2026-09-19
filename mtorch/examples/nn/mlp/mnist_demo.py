@@ -14,9 +14,9 @@ from mtorch.utils.data.datasets import Mnist
 from mtorch.utils.data.transforms import Compose, Flatten, Normalize, ToFloat32
 from mtorch.optim import SGD
 from mtorch.nn.modules import Sequential, Relu, Linear, CrossEntroyLoss
-from mtorch.utils import dumps
+from mtorch.utils.persist import PersistService
 from mtorch import CACHE_DIR
-from mtorch.utils.perf import CodeExecutionProfiler, MemoryUsageProfiler, ProfilerUtils
+from mtorch.utils.perf import CodeExecutionProfiler, MemoryUsageProfiler, ProfilerService
 
 
 # 超参数
@@ -55,10 +55,10 @@ perf_infos = {}
 o_count = 0
 o_logs = {}
 for idx in range(max_epoch):
-    loop_start_py_mm = ProfilerUtils.get_task_py_memory()
-    loop_start_all_mm = ProfilerUtils.get_task_all_memory()
+    loop_start_py_mm = ProfilerService.get_task_py_memory()
+    loop_start_all_mm = ProfilerService.get_task_all_memory()
     # loop_start_snapshot = tracemalloc.take_snapshot()
-    loop_start_time = ProfilerUtils.get_current_time()
+    loop_start_time = ProfilerService.get_current_time()
     count = 0
     o_log = {}
     o_logs[f"轮数{o_count}->{o_count+1}"] = o_log
@@ -100,13 +100,13 @@ for idx in range(max_epoch):
                 m_profiler.set_scene(scene="梯度更新"),
             ):
                 optimizer.step()
-            loop_start_time = ProfilerUtils.get_current_time()
-            loop_start_py_mm = ProfilerUtils.get_task_py_memory()
-            loop_start_all_mm = ProfilerUtils.get_task_all_memory()
+            loop_start_time = ProfilerService.get_current_time()
+            loop_start_py_mm = ProfilerService.get_task_py_memory()
+            loop_start_all_mm = ProfilerService.get_task_all_memory()
             # loop_start_snapshot = tracemalloc.take_snapshot()
             o_log[f"{count}->{count+1}"] = logs
             count += 1
 
 asctime = time.asctime()
 asctime = asctime.replace(" ", "_").replace(":", "-")
-dumps(file=CACHE_DIR / f"stats/{asctime}/perf_info", obj=o_logs)
+PersistService.save_json(file=CACHE_DIR / f"stats/{asctime}/perf_info", obj=o_logs)

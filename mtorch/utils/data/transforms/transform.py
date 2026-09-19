@@ -1,4 +1,4 @@
-from mtorch._interfaces import ITransform
+from mtorch.typing import ITransform
 
 
 class Compose(ITransform):

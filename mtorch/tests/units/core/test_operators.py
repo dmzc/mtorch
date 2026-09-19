@@ -2,7 +2,7 @@ from mtorch import Tensor, ITensor
 import mtorch.core.operator as F
 import numpy as np
 from typing import Any
-from mtorch.tests._utils import DiffUtils
+from mtorch.tests.utils import DiffUtils
 
 
 def test_add():

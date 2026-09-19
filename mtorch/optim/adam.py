@@ -1,6 +1,6 @@
 import math
 import numpy as np
-from mtorch._interfaces import IOptimizer, IModule
+from mtorch.typing import IOptimizer, IModule
 
 
 class Adam(IOptimizer):
